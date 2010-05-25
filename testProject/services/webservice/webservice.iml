@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" relativePaths="true" version="4">
+<component name="NewModuleRootManager" inherit-compiler-output="false">
+<content url="file://$MODULE_DIR$/">
+<output url="file://$MODULE_DIR$/build/classes/main"/>
+<sourceFolder url="file://$MODULE_DIR$/src/main/resources" isTestSource="false"/>
+<sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false"/>
+<output-test url="file://$MODULE_DIR$/build/classes/test"/>
+<sourceFolder url="file://$MODULE_DIR$/src/test/resources" isTestSource="true"/>
+<sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true"/>
+</content>
+</component>
+<orderEntry type="inheritedJdk"/>
+<orderEntry type="sourceFolder" forTests="false"/>
+<orderEntry type="module-library" scope="COMPILE" exported="">
+<library>
+<CLASSES>
+<root url="jar://$MODULE_DIR$/../../../../../.gradle/cache/commons-collections/commons-collections/jars/commons-collections-3.2.jar!/"/>
+</CLASSES>
+<JAVADOC/>
+<SOURCES/>
+</library>
+</orderEntry>
+<orderEntry type="module-library" scope="COMPILE" exported="">
+<library>
+<CLASSES>
+<root url="jar://$MODULE_DIR$/../../../../../.gradle/cache/commons-lang/commons-lang/jars/commons-lang-2.4.jar!/"/>
+</CLASSES>
+<JAVADOC/>
+<SOURCES/>
+</library>
+</orderEntry>
+<orderEntry type="module-library" scope="COMPILE" exported="">
+<library>
+<CLASSES>
+<root url="jar://$MODULE_DIR$/../../../../../.gradle/cache/commons-io/commons-io/jars/commons-io-1.2.jar!/"/>
+</CLASSES>
+<JAVADOC/>
+<SOURCES/>
+</library>
+</orderEntry>
+<orderEntry type="module" module-name="shared" exported=""/>
+<orderEntry type="module" module-name="api" exported=""/>
+<orderEntry type="module-library" scope="TEST" exported="">
+<library>
+<CLASSES>
+<root url="jar://$MODULE_DIR$/../../../../../.gradle/cache/junit/junit/jars/junit-4.7.jar!/"/>
+</CLASSES>
+<JAVADOC/>
+<SOURCES/>
+</library>
+</orderEntry>
+<orderEntryProperties/>
+<component name="FacetManager"/>
+</module>

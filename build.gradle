@@ -1,0 +1,16 @@
+apply plugin: 'groovy'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile gradleApi()
+    testCompile group: 'junit', name: 'junit', version: '4.7'
+    groovy localGroovy()
+}
+
+task libs(type: Copy) {
+    from configurations.testRuntime
+    into 'libs'
+}

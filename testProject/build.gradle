@@ -1,0 +1,31 @@
+import org.gradle.plugins.idea.IdeaPlugin
+
+buildscript {
+    dependencies {
+        classpath fileTree("../build/libs/")
+    }
+}
+
+defaultTasks = ['idea']
+
+subprojects {
+    apply plugin: 'java'
+
+    repositories {
+       mavenCentral()
+    }
+
+    dependencies {
+        testCompile 'junit:junit:4.7'
+    }
+
+    group = 'org.gradle'
+    version = '1.0'
+    manifest.mainAttributes(provider: 'gradle')
+}
+
+allprojects {
+    apply plugin: IdeaPlugin
+}
+
+

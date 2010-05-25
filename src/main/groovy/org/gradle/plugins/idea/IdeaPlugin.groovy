@@ -23,18 +23,22 @@ class IdeaPlugin implements Plugin<Project> {
                 outputFile = new File(project.projectDir, project.name + ".iml")
                 imlDir = outputFile.getParentFile();
                 moduleDir = project.projectDir
+                sourceDirs = []
+                testSourceDirs = []
             }
             project.idea.dependsOn 'ideaModule'
             project.ideaClean.delete project.ideaModule.outputFile
             plugins.withType(JavaPlugin).allPlugins {
                 project.ideaModule {
-                    mainSource = project.sourceSets.main
-                    testSource = project.sourceSets.test
+                    sourceDirs = project.sourceSets.main.allSource.sourceTrees.srcDirs.flatten()
+                    testSourceDirs = project.sourceSets.test.allSource.sourceTrees.srcDirs.flatten()
+                    outputDir = project.sourceSets.main.classesDir
+                    testOutputDir = project.sourceSets.test.classesDir
                     def configurations = project.configurations
                     scopes = [
-                            compile: [configurations.compile],
-                            runtime: [configurations.runtime.copy()],
-                            test: [configurations.testRuntime.copy(), configurations.testCompile.copy()]
+                            compile: [plus: [configurations.compile], minus:[]],
+                            runtime: [plus: [configurations.runtime], minus: [configurations.compile]],
+                            test: [plus: [configurations.testRuntime], minus: [configurations.runtime]]
                     ]
                 }
             }

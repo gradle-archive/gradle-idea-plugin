@@ -11,8 +11,10 @@ public class IdeaModule extends DefaultTask {
     File imlDir
     File moduleDir
     File outputFile
-    SourceSet mainSource
-    SourceSet testSource
+    def sourceDirs
+    def testSourceDirs
+    File outputDir
+    File testOutputDir
     Map scopes = [:]
 
     @TaskAction
@@ -23,42 +25,38 @@ public class IdeaModule extends DefaultTask {
         moduleRootManager.replaceNode {
             component(name: 'NewModuleRootManager', 'inherit-compiler-output': 'false') {
                 content(url: toModuleURL(moduleDir)) {
-                    if (mainSource) {
-                        output(url: toModuleURL(mainSource.classesDir))
-                        mainSource?.allSource?.sourceTrees*.srcDirs*.each { File file ->
-                            sourceFolder(url: toModuleURL(file), isTestSource: 'false')
-                        }
+                    sourceDirs.each { File file ->
+                        sourceFolder(url: toModuleURL(file), isTestSource: 'false')
                     }
-                    if (testSource) {
-                        'output-test'(url: toModuleURL(testSource.classesDir))
-                        testSource?.allSource?.sourceTrees*.srcDirs*.each { File file ->
-                            sourceFolder(url: toModuleURL(file), isTestSource: 'true')
-                        }
+                    testSourceDirs.each { File file ->
+                        sourceFolder(url: toModuleURL(file), isTestSource: 'true')
                     }
                 }
+                if (outputDir) output(url: toModuleURL(outputDir))
+                if (testOutputDir) 'output-test'(url: toModuleURL(testOutputDir))
+
+                orderEntry(type: 'inheritedJdk')
+                orderEntry(type: 'sourceFolder', forTests: 'false')
+
+                scopes.each {scope, configuration ->
+                    def libs = getExternalDependencies(scope)
+                    libs.each { lib ->
+                        orderEntry(type: 'module-library', scope: "${scope.toUpperCase()}", exported: '') {
+                            library {
+                                CLASSES() { root(url: toModuleURL(lib)) }
+                                JAVADOC()
+                                SOURCES()
+                            }
+                        }
+                    }
+                    def projectDependencies = getProjectDependencies(scope)
+                    projectDependencies.each { project ->
+                        orderEntry(type: 'module', scope: "${scope.toUpperCase()}", 'module-name': project.name, exported: '')
+                    }
+                }
+
+                orderEntryProperties()
             }
-
-            orderEntry(type: 'inheritedJdk')
-            orderEntry(type: 'sourceFolder', forTests: 'false')
-
-            scopes.each {scope, configuration ->
-                def libs = getExternalDependencies(scope)
-                libs.each { lib ->
-                    orderEntry(type: 'module-library', scope: "${scope.toUpperCase()}", exported: '') {
-                        library {
-                            CLASSES() { root(url: toModuleURL(lib)) }
-                            JAVADOC()
-                            SOURCES()
-                        }
-                    }
-                }
-                def projectDependencies = getProjectDependencies(scope)
-                projectDependencies.each { projectDependency ->
-                    orderEntry(type: 'module', 'module-name': projectDependency.dependencyProject.name, exported: '')
-                }
-            }
-
-            orderEntryProperties()
         }
         Util.prettyPrintXML(getOutputFile(), xmlRoot);
     }
@@ -66,20 +64,33 @@ public class IdeaModule extends DefaultTask {
 
     def getProjectDependencies(String scope) {
         if (scopes[scope]) {
-            return scopes[scope].inject([]) { result, configuration ->
-                result += configuration.getAllDependencies(ProjectDependency)
+            configurations = scopes[scope]
+            def included = configurations.plus.inject([] as Set) { includes, configuration ->
+                includes + configuration.getAllDependencies(ProjectDependency).collect { projectDependency -> projectDependency.dependencyProject }
             }
+            println('IIIIIIIIII ' + scope + ' ' + included)
+            configurations.minus.each { configuration ->
+                included = included - configuration.getAllDependencies(ProjectDependency).collect { projectDependency -> projectDependency.dependencyProject }
+            }
+            return included
         }
         return []
     }
 
     def getExternalDependencies(String scope) {
         if (scopes[scope]) {
-            return scopes[scope].inject([]) { result, configuration ->
-                result += configuration.files {
+            configurations = scopes[scope]
+            def included = configurations.plus.inject([] as Set) { includes, configuration ->
+                includes + configuration.files {
                     !(it instanceof ProjectDependency)
                 }
             }
+            def excluded = configurations.minus.inject([] as Set) { excludes, configuration ->
+                excludes + configuration.files {
+                    !(it instanceof ProjectDependency)
+                }
+            }
+            return included - excluded
         }
         return []
     }
@@ -108,4 +119,5 @@ public class IdeaModule extends DefaultTask {
         }
         return slurper.parseText(defaultXML);
     }
+
 }

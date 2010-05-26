@@ -6,11 +6,12 @@ import org.gradle.api.tasks.TaskAction
 
 public class IdeaProject extends DefaultTask {
     def subprojects;
+    
     File outputFile;
 
     @TaskAction
     void updateXML() {
-        GPathResult root = getSourceRoot(getOutputFile());
+        GPathResult root = Util.getSourceRoot(outputFile, defaultXml, logger);
         def projectModuleManager = root.component.find { it.@name == 'ProjectModuleManager' }
         projectModuleManager.replaceNode {
             component(name: 'ProjectModuleManager') {
@@ -19,7 +20,7 @@ public class IdeaProject extends DefaultTask {
                         if (subproject.plugins.hasPlugin(IdeaPlugin)) {
                             File imlFile = subproject.ideaModule.outputFile
                             String projectPath = this.toProjectPath(imlFile)
-                            module(fileurl: relativePathToURI(projectPath), filepath: projectPath)
+                            module(fileurl: Util.relativePathToURI(projectPath), filepath: projectPath)
                         }
                     }
                 }
@@ -28,7 +29,7 @@ public class IdeaProject extends DefaultTask {
         Util.prettyPrintXML(outputFile, root);
     }
 
-    def String getDefaultXML() {
+    def String getDefaultXml() {
         '''<project relativePaths="true" version="4">
             <component name="ProjectModuleManager"/>
             <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-type="JavaSDK">
@@ -38,42 +39,7 @@ public class IdeaProject extends DefaultTask {
           '''
     }
 
-
-    private static String getRelativeURI(File rootDir, String rootDirString, File file) {
-        String relpath = getRelativePath(rootDir, rootDirString, file)
-        return relativePathToURI(relpath)
-    }
-
-    private static String getRelativePath(File rootDir, String rootDirString, File file) {
-        String relpath = Util.getRelativePath(rootDir, file)
-        return rootDirString + '/' + relpath
-    }
-
-    private static String relativePathToURI(String relpath) {
-        if (relpath.endsWith('.jar'))
-            return 'jar://' + relpath + '!/';
-        else
-            return 'file://' + relpath;
-    }
-
-    private String toProjectURL(File file) {
-        return getRelativeURI(project.projectDir, '$PROJECT_DIR$', file)
-    }
-
-    def String toProjectPath(File file) {
-        return getRelativePath(project.projectDir, '$PROJECT_DIR$', file)
-    }
-
-    private GPathResult getSourceRoot(File outputFile) {
-        XmlSlurper slurper = new XmlSlurper();
-        if (outputFile.exists()) {
-            try {
-                return slurper.parse(outputFile);
-            }
-            catch (Exception exception) {
-                System.out.println("Error opening existing file, pretending file does not exist");
-            }
-        }
-        return slurper.parseText(defaultXML);
+    private String toProjectPath(File file) {
+        return Util.getRelativePath(project.projectDir, '$PROJECT_DIR$', file)
     }
 }

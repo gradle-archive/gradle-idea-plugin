@@ -42,6 +42,19 @@ public class Util {
         }
     }
 
+    static GPathResult getSourceRoot(File outputFile, String defaultXml, def logger) {
+        XmlSlurper slurper = new XmlSlurper();
+        if (outputFile.exists()) {
+            try {
+                return slurper.parse(outputFile);
+            }
+            catch (Exception exception) {
+                logger.warn("Error opening file $outputFile. Pretending file does not exist");
+            }
+        }
+        return slurper.parseText(defaultXml);
+    }
+
 
     static Collection<ProjectDependency> getProjectDeps(Project proj) {
         def config = proj.configurations.findByName('runtime')

@@ -19,7 +19,7 @@ public class IdeaModule extends DefaultTask {
 
     @TaskAction
     void updateXML() {
-        GPathResult xmlRoot = getSourceRoot(getOutputFile());
+        GPathResult xmlRoot = Util.getSourceRoot(getOutputFile(), defaultXml, logger);
 
         def moduleRootManager = xmlRoot.component.find { it.@name == 'NewModuleRootManager' }
         moduleRootManager.replaceNode {
@@ -68,7 +68,6 @@ public class IdeaModule extends DefaultTask {
             def included = configurations.plus.inject([] as Set) { includes, configuration ->
                 includes + configuration.getAllDependencies(ProjectDependency).collect { projectDependency -> projectDependency.dependencyProject }
             }
-            println('IIIIIIIIII ' + scope + ' ' + included)
             configurations.minus.each { configuration ->
                 included = included - configuration.getAllDependencies(ProjectDependency).collect { projectDependency -> projectDependency.dependencyProject }
             }
@@ -99,25 +98,11 @@ public class IdeaModule extends DefaultTask {
         Util.getRelativeURI(imlDir, '$MODULE_DIR$', file)
     }
 
-    def String getDefaultXML() {
+    def String getDefaultXml() {
         '''<module relativePaths="true" type="JAVA_MODULE" version="4">
         <component name="NewModuleRootManager"/>
         <component name="FacetManager"/>
       </module>
       '''
     }
-
-    private GPathResult getSourceRoot(File outputFile) {
-        XmlSlurper slurper = new XmlSlurper();
-        if (outputFile.exists()) {
-            try {
-                return slurper.parse(outputFile);
-            }
-            catch (Exception exception) {
-                System.out.println("Error opening existing file, pretending file does not exist");
-            }
-        }
-        return slurper.parseText(defaultXML);
-    }
-
 }

@@ -8,9 +8,11 @@ import javax.xml.transform.TransformerFactory
 import javax.xml.transform.OutputKeys
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.Project
+import org.gradle.api.artifacts.maven.XmlProvider
+import org.gradle.listener.ListenerBroadcast
 
 public class Util {
-    static void prettyPrintXML(File outputFile, GPathResult root) {
+    static void prettyPrintXML(File outputFile, GPathResult root, ListenerBroadcast xmlActions) {
         Writable xml = new StreamingMarkupBuilder().bind {
             mkp.xmlDeclaration()
             mkp.yield root
@@ -19,7 +21,6 @@ public class Util {
         TransformerFactory factory = TransformerFactory.newInstance()
         def transformer = factory.newTransformer()
         transformer.setOutputProperty(OutputKeys.INDENT, 'yes')
-
         File backupFile = new File(outputFile.getParentFile(), outputFile.getName() + '.backup')
         if (outputFile.exists()) {
             outputFile.renameTo(backupFile)
@@ -27,12 +28,16 @@ public class Util {
             outputFile.parentFile.mkdir() // make sure the parent dir is created
         }
 
-        try {
-            outputFile.withWriter("UTF-8") {  Writer writer ->
-                StreamResult result = new StreamResult(writer)
-                transformer.transform(new StreamSource(new ByteArrayInputStream(xml.toString().bytes)), result)
-            }
+        def xmlToWrite = new XmlParser().parseText(xml.toString())
 
+        xmlActions.getSource().execute(xmlToWrite)
+
+        writeOutputFile(outputFile, backupFile, transformer, xmlToWrite)
+    }
+
+    private static def writeOutputFile(File outputFile, File backupFile, transformer, Node xml) {
+        try {
+            new XmlNodePrinter(new PrintWriter(outputFile.newWriter())).print(xml)
             // if successful, remove up the backup
             backupFile.delete()
         }

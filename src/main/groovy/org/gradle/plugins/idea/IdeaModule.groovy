@@ -6,6 +6,8 @@ import groovy.util.slurpersupport.GPathResult
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.Action
+import org.gradle.listener.ListenerBroadcast
 
 public class IdeaModule extends DefaultTask {
     File imlDir
@@ -58,7 +60,7 @@ public class IdeaModule extends DefaultTask {
                 orderEntryProperties()
             }
         }
-        Util.prettyPrintXML(getOutputFile(), xmlRoot);
+        Util.prettyPrintXML(getOutputFile(), xmlRoot, new ListenerBroadcast<Action>(Action.class));
     }
 
 
@@ -99,10 +101,6 @@ public class IdeaModule extends DefaultTask {
     }
 
     def String getDefaultXml() {
-        '''<module relativePaths="true" type="JAVA_MODULE" version="4">
-        <component name="NewModuleRootManager"/>
-        <component name="FacetManager"/>
-      </module>
-      '''
+        getClass().getResource("defaultModule.xml").text
     }
 }

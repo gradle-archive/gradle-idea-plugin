@@ -3,11 +3,14 @@ package org.gradle.plugins.idea
 import org.gradle.api.DefaultTask
 import groovy.util.slurpersupport.GPathResult
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.artifacts.maven.XmlProvider
+import org.gradle.api.Action
+import org.gradle.listener.ListenerBroadcast
 
 public class IdeaProject extends DefaultTask {
     def subprojects;
-    
     File outputFile;
+    private ListenerBroadcast<Action> withXmlActions = new ListenerBroadcast<Action>(Action.class);
 
     @TaskAction
     void updateXML() {
@@ -26,20 +29,26 @@ public class IdeaProject extends DefaultTask {
                 }
             }
         }
-        Util.prettyPrintXML(outputFile, root);
+        Util.prettyPrintXML(outputFile, root, withXmlActions);
     }
 
     def String getDefaultXml() {
-        '''<project relativePaths="true" version="4">
-            <component name="ProjectModuleManager"/>
-            <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-type="JavaSDK">
-              <output url="file://$PROJECT_DIR$/out" />
-            </component>
-          </project>
-          '''
+        getClass().getResource("defaultProject.xml").text
     }
 
-    private String toProjectPath(File file) {
+    String toProjectPath(File file) {
         return Util.getRelativePath(project.projectDir, '$PROJECT_DIR$', file)
+    }
+
+    /**
+     * <p>Adds a closure to be called when the ipr xml has been created. The xml is passed to the closure as a
+     * parameter in form of a  {@link org.gradle.api.artifacts.maven.XmlProvider} . The xml might be modified.</p>
+     *
+     * @param closure The closure to execute when the ipr xml has been created.
+     * @return this
+     */
+    IdeaProject withXml(Closure closure) {
+        withXmlActions.add("execute", closure);
+        return this;
     }
 }

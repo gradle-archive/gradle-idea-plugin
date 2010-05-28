@@ -18,11 +18,7 @@ package org.gradle.plugins.idea;
 import groovy.util.Node;
 
 /**
- * Created by IntelliJ IDEA.
- * User: hans
- * Date: May 28, 2010
- * Time: 12:53:26 PM
- * To change this template use File | Settings | File Templates.
+ * @author Hans Dockter
  */
 public interface Dependency {
     void addToNode(Node parentNode);

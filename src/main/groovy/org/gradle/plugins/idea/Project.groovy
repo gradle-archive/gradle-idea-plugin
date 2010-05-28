@@ -19,13 +19,28 @@ import org.gradle.listener.ListenerBroadcast
 import org.gradle.api.Action
 
 /**
+ * Represents the customizable elements of an ipr (via XML hooks everything of the ipr is customizable).
+ *
  * @author Hans Dockter
  */
 class Project {
+    /**
+     * A set of {@link Path} instances pointing to the modules contained in the ipr.
+     */
     Set modulePaths = []
+
+    /**
+     * A set of wildcard string to be included/excluded from the resources.
+     */
     Set wildcards = []
+
+    /**
+     * Represent the jdk information of the project java sdk.
+     */
     Jdk jdk
-    Node xml
+
+    private Node xml
+    
     private ListenerBroadcast<Action> withXmlActions
 
     def Project(Set modulePaths, String javaVersion, Set wildcards, Reader inputXml, ListenerBroadcast<Action> beforeConfiguredActions,

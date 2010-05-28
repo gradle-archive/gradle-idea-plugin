@@ -16,6 +16,9 @@
 package org.gradle.plugins.idea
 
 /**
+ * Represents a the information for the project JavaSDK. This information are attributes of the ProjectRootManager
+ * element in the ipr.
+ * 
  * @author Hans Dockter
  */
 class Jdk {

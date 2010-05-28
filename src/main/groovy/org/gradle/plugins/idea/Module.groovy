@@ -19,15 +19,41 @@ import org.gradle.api.Action
 import org.gradle.listener.ListenerBroadcast
 
 /**
+ * Represents the customizable elements of an iml (via XML hooks everything of the iml is customizable).
+ *
  * @author Hans Dockter
  */
 class Module {
+    /**
+     * The foldes for the production code. Must not be null.
+     */
     Set sourceFolders = [] as LinkedHashSet
+
+    /**
+     * The folders for the test code. Must not be null.
+     */
     Set testSourceFolders = [] as LinkedHashSet
+
+    /**
+     * Folders to be excluded. Must not be null.
+     */
     Set excludeFolders = [] as LinkedHashSet
+
+    /**
+     * The dir for the production source classes. If null this output dir element is not added.
+     */
     Path outputDir
+
+    /**
+     * The dir for the compiled test source classes. If null this output element is not added.
+     */
     Path testOutputDir
+
+    /**
+     * The dependencies of this module. Must not be null. Has instances of type {@link Dependency}.
+     */
     Set dependencies = [] as LinkedHashSet
+    
     private Node xml
 
     private ListenerBroadcast<Action> withXmlActions
@@ -93,6 +119,11 @@ class Module {
         }
     }
 
+    /**
+     * Generates the XML for the iml.
+     *
+     * @param writer The writer where the iml xml is generated into.
+     */
     def toXml(Writer writer) {
         removeSourceAndExcludeFolderFromXml()
         addSourceAndExcludeFolderToXml()
@@ -158,7 +189,7 @@ class Module {
         }
     }
 
-    boolean isDependencyOrderEntry(def orderEntry) {
+    protected boolean isDependencyOrderEntry(def orderEntry) {
         ['module-library', 'module'].contains(orderEntry.@type)
     }
 

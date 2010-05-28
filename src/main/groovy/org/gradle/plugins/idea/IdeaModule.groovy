@@ -15,35 +15,80 @@
  */
 package org.gradle.plugins.idea
 
-import org.gradle.api.DefaultTask
-
-import org.gradle.api.artifacts.ProjectDependency
-import org.gradle.api.tasks.TaskAction
-
 import org.gradle.api.Action
+import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.ProjectDependency
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
 import org.gradle.listener.ListenerBroadcast
 
 /**
  * @author Hans Dockter
  */
 public class IdeaModule extends DefaultTask {
-    File imlDir
+    /**
+     * The root directory of the module. Must not be null.
+     */
+    @InputFiles
     File moduleDir
+
+    /**
+     * The iml file.
+     */
+    @OutputFile
     File outputFile
-    def sourceDirs
-    def testSourceDirs
+
+    /**
+     * The dirs containing the productions sources. Must not be null.
+     */
+    @InputFiles
+    Set sourceDirs
+
+    /**
+     * The dirs containing the test sources. Must not be null.
+     */
+    @InputFiles
+    Set testSourceDirs
+
+    /**
+     * The dirs to be excluded by intellij. Must not be null.
+     */
+    @InputFiles
     def excludeDirs
+
+    /**
+     * The intellij output dir for the production sources. If null no entry for output dirs is created.
+     */
+    @InputFiles @Optional
     File outputDir
+
+    /**
+     * The intellij output dir for the test sources. If null no entry for test output dirs is created.
+     */
+    @InputFiles @Optional
     File testOutputDir
+
+    /**
+     * The keys of this map are the Intellij scopes. Each key points to another map that has two keys, plus and minus.
+     * The values of those keys are sets of {@link org.gradle.api.artifacts.Configuration}       objects. The files of the
+     * plus configurations are added minus the files from the minus configurations.
+     */
     Map scopes = [:]
 
     private ListenerBroadcast<Action> beforeConfiguredActions = new ListenerBroadcast<Action>(Action.class);
     private ListenerBroadcast<Action> whenConfiguredActions = new ListenerBroadcast<Action>(Action.class);
     private ListenerBroadcast<Action> withXmlActions = new ListenerBroadcast<Action>(Action.class);
 
+    def IdeaModule() {
+        outputs.upToDateWhen { false }
+    }
+
     @TaskAction
     void updateXML() {
         Reader xmlreader = outputFile.exists() ? new FileReader(outputFile) : null;
+        println getDependencies()
         Module module = new Module(getSourcePaths(), getTestSourcePaths(), getExcludePaths(), getOutputPath(), getTestOutputPath(),
                 getDependencies(), xmlreader, beforeConfiguredActions, whenConfiguredActions, withXmlActions)
         module.toXml(new FileWriter(outputFile))
@@ -108,7 +153,7 @@ public class IdeaModule extends DefaultTask {
     }
 
     protected Path getPath(File file) {
-        new Path(imlDir, '$MODULE_DIR$', file)
+        new Path(outputFile.parentFile, '$MODULE_DIR$', file)
     }
 
     IdeaProject withXml(Closure closure) {

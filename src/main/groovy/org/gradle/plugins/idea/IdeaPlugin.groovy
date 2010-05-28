@@ -23,6 +23,13 @@ import org.gradle.api.JavaVersion
 
 /**
  * @author Hans Dockter
+ *
+ * When applied to a project, this plugin add one IdeaModule task. If the project is the root project, the plugin
+ * adds also an IdeaProject task.
+ *
+ * <code>khjsfskjdh</code>
+ *
+ * If the java plugin is or has been added to a project where this plugin is applied to, the IdeaModule task
  */
 class IdeaPlugin implements Plugin<Project> {
     void apply(Project project) {
@@ -45,6 +52,7 @@ class IdeaPlugin implements Plugin<Project> {
                 moduleDir = project.projectDir
                 sourceDirs = []
                 testSourceDirs = []
+                excludeDirs = []
             }
             project.idea.dependsOn 'ideaModule'
             project.ideaClean.delete project.ideaModule.outputFile

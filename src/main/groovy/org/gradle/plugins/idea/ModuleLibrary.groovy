@@ -16,13 +16,34 @@
 package org.gradle.plugins.idea
 
 /**
+ * Represents an orderEntry of type module-library in the iml xml.
+ *
  * @author Hans Dockter
  */
 class ModuleLibrary implements Dependency {
+    /**
+     * A set of {@link Path} instances for class libraries.
+     */
     Set classes
+
+    /**
+     * A set of {@link JarDirectory} instances for directories containing jars.
+     */
     Set jarDirectories
+
+    /**
+     * A set of {@link Path} instances for javadoc associated with the library elements.
+     */
     Set javadoc
+
+    /**
+     * A set of {@link Path} instances for source code associated with the library elements.
+     */
     Set sources
+
+    /**
+     * The scope of this dependency. If null the scope attribute is not added.
+     */
     String scope
 
     def ModuleLibrary(classes, javadoc, sources, jarDirectories, scope) {

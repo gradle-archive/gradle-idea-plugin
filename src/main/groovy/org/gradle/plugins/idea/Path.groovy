@@ -16,10 +16,19 @@
 package org.gradle.plugins.idea
 
 /**
+ * Represents a path in a format as used often in ipr and iml files.
+ *
  * @author Hans Dockter
  */
 class Path {
+    /**
+     * The url of the path. Must not be null
+     */
     String url
+
+    /**
+     * The path string of this path. Might be null.
+     */
     String path
 
     def Path(rootDir, rootDirString, file) {
@@ -54,12 +63,11 @@ class Path {
             return 'file://' + relpath;
     }
 
-    //This gets a relative path even if neither path is an ancestor of the other.
+    // This gets a relative path even if neither path is an ancestor of the other.
     // implemenation taken from http://www.devx.com/tips/Tip/13737 and slighly modified
     //@param relativeTo  the destinationFile
     //@param fromFile    where the relative path starts
-
-    public String getRelativePath(File relativeTo, File fromFile) {
+    protected String getRelativePath(File relativeTo, File fromFile) {
         return matchPathLists(getPathList(relativeTo), getPathList(fromFile))
     }
 

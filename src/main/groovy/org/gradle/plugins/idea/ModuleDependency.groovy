@@ -16,10 +16,19 @@
 package org.gradle.plugins.idea
 
 /**
+ * Represents an orderEntry of type module in the iml xml.
+ *
  * @author Hans Dockter
  */
 class ModuleDependency implements Dependency {
+    /**
+     * The name of the module the module depends on. Must not be null.
+     */
     String name
+
+    /**
+     * The scope for this dependency. If null the scope attribute is not added.
+     */
     String scope
 
     def ModuleDependency(name, scope) {

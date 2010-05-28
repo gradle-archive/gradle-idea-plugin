@@ -16,10 +16,19 @@
 package org.gradle.plugins.idea
 
 /**
+ * Represents a jar directory element of an idea module library.
+ *
  * @author Hans Dockter
  */
 class JarDirectory {
+    /**
+     * The path of the jar directory
+     */
     Path path
+
+    /**
+     * The value for the recursive attribute of the jar directory element.
+     */
     boolean recursive
 
     def JarDirectory(path, recursive) {

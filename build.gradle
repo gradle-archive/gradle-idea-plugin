@@ -1,4 +1,22 @@
+buildscript {
+    repositories {
+        mavenRepo urls: 'http://gradle.artifactoryonline.com/gradle/plugins-snapshots-local'
+    }
+    dependencies {
+        classpath "org.gradle.plugins:gradle-intellij-plugin:0.1-SNAPSHOT"
+    }
+}
+
 apply plugin: 'groovy'
+apply plugin: 'maven'
+apply plugin: org.gradle.plugins.idea.IdeaPlugin
+
+group = 'org.gradle.plugins'
+version = '0.1-SNAPSHOT'
+
+configurations {
+    deployerJars
+}
 
 repositories {
     mavenCentral()
@@ -6,11 +24,31 @@ repositories {
 
 dependencies {
     compile gradleApi()
-    testCompile group: 'junit', name: 'junit', version: '4.7'
+    testCompile group: 'junit', name: 'junit', version: '4.8.1', "org.spockframework:spock-core:0.4-groovy-1.7@jar"
     groovy localGroovy()
+    deployerJars "org.apache.maven.wagon:wagon-webdav-jackrabbit:1.0-beta-6"
 }
 
 task libs(type: Copy) {
     from configurations.testRuntime
     into 'libs'
 }
+
+uploadArchives {
+//    repositories.mavenDeployer {
+//        configuration = configurations.deployerJars
+//        repository(url: "dav:http://gradle.artifactoryonline.com/gradle/libs-releases-local") {
+//            authentication(userName: "hansd", password: "KW2Sqk9J")
+//        }
+//    }
+    repositories {
+        uploadDescriptor = false
+        org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials('Artifactory Realm', "gradle.artifactoryonline.com", "hansd", "KW2Sqk9J")
+        add(new org.apache.ivy.plugins.resolver.URLResolver()) {
+            m2compatible = true
+            name = 'artifactory-publish'
+            addArtifactPattern("http://gradle.artifactoryonline.com/gradle/libs-releases-local/[module]/[revision]/[artifact]-[revision].[ext]")
+        }
+    }
+}
+

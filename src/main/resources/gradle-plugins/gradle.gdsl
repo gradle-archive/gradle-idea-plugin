@@ -26,10 +26,4 @@ contributor(testContext) {
             delegatesTo findClass(v)
         }
     }
-   /* def call = enclosingCall("task")
-    new File("/home/johannes/debug.txt").append("call:"+call)
-    if (call) {
-       def namedParams = call.argumentList.namedArguments[0]
-       if (namedParams instanceof Map) delegatesTo findClass(namedParams.type.name)
-    }*/
 }

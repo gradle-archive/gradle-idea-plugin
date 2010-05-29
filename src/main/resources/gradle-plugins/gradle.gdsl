@@ -1,0 +1,35 @@
+def ctx = context(scope: scriptScope(), filetypes: ["gradle"])
+contributor(ctx) {
+    delegatesTo findClass("org.gradle.api.Project")
+    method name: "test", type: "void", params: [closure: {}]
+    method name: "compile", type: "void", params: [closure: {}]
+    method name: "compileGroovy", type: "void", params: [closure: {}]
+    method name: "jar", type: "void", params: [closure: {}]
+}
+
+def delegates = [
+        "test"              :   "org.gradle.api.tasks.testing.Test",
+        "compile"           :   "org.gradle.api.tasks.compile.Compile",
+        "compileGroovy"     :   "org.gradle.api.tasks.compile.GroovyCompile",
+        "jar"               :   "org.gradle.api.tasks.bundling.Jar",
+        "uploadArchives"    :   "org.gradle.api.tasks.Upload",
+        "dependencies"      :   "org.gradle.api.artifacts.dsl.DependencyHandler",
+        "repositories"      :   "org.gradle.api.artifacts.dsl.RepositoryHandler",
+        "configurations"    :   "org.gradle.api.artifacts.ConfigurationContainer",
+        "allprojects"       :   "org.gradle.api.Project"
+]
+
+def testContext = context(scope: closureScope(isArg: true), filetypes: ['gradle'])
+contributor(testContext) {
+    delegates.each {k, v ->
+        if (enclosingCall(k)) {
+            delegatesTo findClass(v)
+        }
+    }
+   /* def call = enclosingCall("task")
+    new File("/home/johannes/debug.txt").append("call:"+call)
+    if (call) {
+       def namedParams = call.argumentList.namedArguments[0]
+       if (namedParams instanceof Map) delegatesTo findClass(namedParams.type.name)
+    }*/
+}

@@ -2,19 +2,19 @@ import java.text.SimpleDateFormat
 
 buildscript {
     repositories {
-        mavenRepo urls: 'http://gradle.artifactoryonline.com/gradle/plugins-releases-local'
+        mavenRepo urls: 'http://gradle.artifactoryonline.com/gradle/plugins'
     }
     dependencies {
-        classpath "org.gradle.plugins:gradle-intellij-plugin:0.1-20100528182239+0200"
+        classpath "org.gradle.plugins:gradle-intellij-plugin:0.1"
     }
 }
 
 apply plugin: 'groovy'
 apply plugin: 'maven'
-//apply plugin: org.gradle.plugins.intellij.IntellijPlugin
+apply plugin: 'org.gradle.intellij'
 
 group = 'org.gradle.plugins'
-version = '0.1-' + new SimpleDateFormat('yyyyMMddHHmmssZ').format(new Date())
+version = '0.2-' + new SimpleDateFormat('yyyyMMddHHmmssZ').format(new Date())
 
 configurations {
     deployerJars

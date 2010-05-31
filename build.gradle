@@ -11,7 +11,7 @@ buildscript {
 
 apply plugin: 'groovy'
 apply plugin: 'maven'
-apply plugin: org.gradle.plugins.idea.IdeaPlugin
+//apply plugin: org.gradle.plugins.intellij.IntellijPlugin
 
 group = 'org.gradle.plugins'
 version = '0.1-' + new SimpleDateFormat('yyyyMMddHHmmssZ').format(new Date())

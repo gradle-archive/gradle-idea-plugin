@@ -36,6 +36,7 @@ import org.gradle.api.specs.Specs
 import org.gradle.plugins.intellij.model.Module
 import org.gradle.plugins.intellij.model.Path
 import org.gradle.plugins.intellij.model.ModuleLibrary
+import org.gradle.plugins.intellij.model.ModuleDependency
 
 /**
  * @author Hans Dockter

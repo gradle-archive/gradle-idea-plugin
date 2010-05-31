@@ -27,13 +27,12 @@ import org.gradle.api.JavaVersion
  * When applied to a project, this plugin add one IdeaModule task. If the project is the root project, the plugin
  * adds also an IdeaProject task.
  *
- * <code>khjsfskjdh</code>
- *
  * If the java plugin is or has been added to a project where this plugin is applied to, the IdeaModule task
  */
 class IntellijPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.configure(project) {
+            apply plugin: 'base' // We apply the base plugin to have the clean<taskname> rule
             task('cleanIdea', description: 'Cleans IDEA project files (IML, IPR)')
             task('idea', description: 'Generates IDEA project files (IML, IPR)')
             if (isRoot(project)) {
@@ -43,7 +42,7 @@ class IntellijPlugin implements Plugin<Project> {
                     javaVersion = JavaVersion.VERSION_1_5.toString()
                     wildcards = ['!?*.java', '!?*.groovy']
                 }
-                project.idea.dependsOn 'ideaProject'
+                idea.dependsOn 'ideaProject'
 
                 project.cleanIdea.dependsOn "cleanIdeaProject"
             }
@@ -55,17 +54,17 @@ class IntellijPlugin implements Plugin<Project> {
                 testSourceDirs = []
                 excludeDirs = []
             }
-            project.idea.dependsOn 'ideaModule'
+            idea.dependsOn 'ideaModule'
 
-            project.cleanIdea.dependsOn "cleanIdeaModule"
+            cleanIdea.dependsOn "cleanIdeaModule"
             
             plugins.withType(JavaPlugin).allPlugins {
                 if (isRoot(project)) {
-                    project.ideaProject {
+                    ideaProject {
                         javaVersion = project.sourceCompatibility
                     }
                 }
-                project.ideaModule {
+                ideaModule {
                     sourceDirs = project.sourceSets.main.allSource.sourceTrees.srcDirs.flatten()
                     testSourceDirs = project.sourceSets.test.allSource.sourceTrees.srcDirs.flatten()
                     outputDir = project.sourceSets.main.classesDir

@@ -15,9 +15,6 @@
  */
 package org.gradle.plugins.intellij.model
 
-import org.gradle.plugins.intellij.Path
-import org.gradle.plugins.intellij.JarDirectory
-
 /**
  * Represents an orderEntry of type module-library in the iml xml.
  *

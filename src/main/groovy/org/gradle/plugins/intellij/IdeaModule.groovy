@@ -17,26 +17,15 @@ package org.gradle.plugins.intellij
 
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.ProjectDependency
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
-import org.gradle.listener.ListenerBroadcast
-import org.gradle.api.artifacts.ExternalDependency
-import org.gradle.api.artifacts.Configuration
-
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
-import org.gradle.api.artifacts.Dependency
-import org.gradle.api.tasks.Input
-import org.gradle.api.artifacts.ResolvedConfiguration
-
-import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.specs.Specs
+import org.gradle.listener.ListenerBroadcast
 import org.gradle.plugins.intellij.model.Module
-import org.gradle.plugins.intellij.model.Path
-import org.gradle.plugins.intellij.model.ModuleLibrary
 import org.gradle.plugins.intellij.model.ModuleDependency
+import org.gradle.plugins.intellij.model.ModuleLibrary
+import org.gradle.plugins.intellij.model.Path
+import org.gradle.api.artifacts.*
+import org.gradle.api.tasks.*
 
 /**
  * @author Hans Dockter
@@ -144,21 +133,19 @@ public class IdeaModule extends DefaultTask {
 
     protected Set getModules(String scope) {
         if (scopes[scope]) {
-            def configurations = scopes[scope]
-            def included = configurations.plus.inject([] as Set) { includes, configuration ->
-                includes + configuration.getAllDependencies(ProjectDependency).collect { projectDependency -> projectDependency.dependencyProject }
+            return getScopeDependencies(scopes[scope], ProjectDependency).collect { ProjectDependency projectDependency ->
+                projectDependency.dependencyProject
+            }.collect { project ->
+                new ModuleDependency(project.name, scope)
             }
-            configurations.minus.each { configuration ->
-                included = included - configuration.getAllDependencies(ProjectDependency).collect { projectDependency -> projectDependency.dependencyProject }
-            }
-            return included.collect { new ModuleDependency(it.name, scope) }
         }
         return []
     }
 
     protected Set getModuleLibraries(String scope) {
         if (scopes[scope]) {
-            Set firstLevelDependencies = getScopeDependencies(scopes[scope])
+            Set firstLevelDependencies = getScopeDependencies(scopes[scope], ExternalDependency)
+            
             ResolvedConfiguration resolvedConfiguration = project.configurations.detachedConfiguration((firstLevelDependencies as Dependency[])).resolvedConfiguration
             def allResolvedDependencies = getAllDeps(resolvedConfiguration.firstLevelModuleDependencies)
 
@@ -172,22 +159,33 @@ public class IdeaModule extends DefaultTask {
             }
             Map javadocFiles = downloadJavadoc ? getFiles(javadocDependencies, "javadoc") : [:]
 
-            return resolvedConfiguration.getFiles(Specs.SATISFIES_ALL).collect { File binaryFile ->
+            Set moduleLibraries = resolvedConfiguration.getFiles(Specs.SATISFIES_ALL).collect { File binaryFile ->
                 File sourceFile = sourceFiles[binaryFile.name]
                 File javadocFile = javadocFiles[binaryFile.name]
                 new ModuleLibrary([getPath(binaryFile)] as Set, javadocFile ? [getPath(javadocFile)] as Set : [] as Set, sourceFile ? [getPath(sourceFile)] as Set : [] as Set, [] as Set, scope)
             }
+            moduleLibraries.addAll(getSelfResolvingFiles(getScopeDependencies(scopes[scope], SelfResolvingDependency), scope))
+            return moduleLibraries
         }
         return []
     }
 
-    private Set getScopeDependencies(configurations) {
+    private def getSelfResolvingFiles(Set dependencies, String scope) {
+        dependencies.inject([] as LinkedHashSet) { result, SelfResolvingDependency selfResolvingDependency ->
+            result.addAll(selfResolvingDependency.resolve().collect { File file ->
+                new ModuleLibrary([getPath(file)] as Set, [] as Set, [] as Set, [] as Set, scope)
+            })
+            result
+        }
+    }
+
+    private Set getScopeDependencies(Map configurations, Class type) {
         Set firstLevelDependencies = []
         configurations.plus.each { configuration ->
-            firstLevelDependencies += configuration.getAllDependencies(ExternalDependency)
+            firstLevelDependencies += configuration.getAllDependencies(type)
         }
         configurations.minus.each { configuration ->
-            firstLevelDependencies -= configuration.getAllDependencies(ExternalDependency)
+            firstLevelDependencies -= configuration.getAllDependencies(type)
         }
         return firstLevelDependencies
     }
@@ -237,52 +235,6 @@ public class IdeaModule extends DefaultTask {
             artifact.extension = 'jar'
             artifact.classifier = 'javadoc'
         }
-    }
-
-
-    protected def getSources(Map configurations) {
-        def sourceDependencies = getExternalDependencies(configurations).collect { dependency ->
-            DefaultExternalModuleDependency sourceDependency = new DefaultExternalModuleDependency(dependency.group, dependency.name, dependency.version)
-            sourceDependency.transitive = false
-            sourceDependency.artifact { artifact ->
-                artifact.name = dependency.name
-                artifact.type = 'source'
-                artifact.extension = 'jar'
-                artifact.classifier = 'sources'
-            }
-            sourceDependency
-        }
-        project.configurations.detachedConfiguration((sourceDependencies as Dependency[])).files
-    }
-
-    protected def getJavadocs(Map configurations) {
-        def javadocDependencies = getExternalDependencies(configurations).collect { dependency ->
-            DefaultExternalModuleDependency javadocDependency = new DefaultExternalModuleDependency(dependency.group, dependency.name, dependency.version)
-            javadocDependency.transitive = false
-            javadocDependency.artifact { artifact ->
-                artifact.name = dependency.name
-                artifact.type = 'javadoc'
-                artifact.extension = 'jar'
-                artifact.classifier = 'javadoc'
-            }
-            javadocDependency
-        }
-        project.configurations.detachedConfiguration((javadocDependencies as Dependency[])).files
-    }
-
-    protected Set getExternalDependencies(Map configurations) {
-        Set externalDependencies = []
-        configurations.plus.each { configuration ->
-            externalDependencies += getExternalDependencies(configuration)
-        }
-        configurations.minus.each { configuration ->
-            externalDependencies -= getExternalDependencies(configuration)
-        }
-        return externalDependencies
-    }
-
-    protected Collection getExternalDependencies(Configuration configuration) {
-        return configuration.getAllDependencies(ExternalDependency)
     }
 
     protected Path getPath(File file) {

@@ -39,7 +39,7 @@ class IntellijPlugin implements Plugin<Project> {
                 task('ideaProject', description: 'Generates IDEA project file (IPR)', type: IdeaProject) {
                     outputFile = new File(project.projectDir, project.name + ".ipr")
                     subprojects = rootProject.allprojects
-                    javaVersion = JavaVersion.VERSION_1_5.toString()
+                    javaVersion = JavaVersion.VERSION_1_6.toString()
                     wildcards = ['!?*.java', '!?*.groovy']
                 }
                 idea.dependsOn 'ideaProject'

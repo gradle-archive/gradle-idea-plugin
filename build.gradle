@@ -2,18 +2,18 @@
 
 import java.text.SimpleDateFormat
 
-buildscript {
-    repositories {
-        mavenRepo urls: 'http://gradle.artifactoryonline.com/gradle/plugins'
-    }
-    dependencies {
-        classpath "org.gradle.plugins:gradle-intellij-plugin:0.1"
-    }
-}
+//buildscript {
+//    repositories {
+//        mavenRepo urls: 'http://gradle.artifactoryonline.com/gradle/plugins'
+//    }
+//    dependencies {
+//        classpath "org.gradle.plugins:gradle-intellij-plugin:0.1"
+//    }
+//}
 
 apply plugin: 'groovy'
 apply plugin: 'maven'
-apply plugin: 'org.gradle.intellij'
+//apply plugin: 'org.gradle.intellij'
 
 group = 'org.gradle.plugins'
 version = '0.1' // + new SimpleDateFormat('yyyyMMddHHmmssZ').format(new Date())
@@ -41,18 +41,9 @@ task libs(type: Copy) {
 uploadArchives {
     repositories.mavenDeployer {
         configuration = configurations.deployerJars
-        repository(url: "dav:http://gradle.artifactoryonline.com/gradle/libs-releases-local") {
+        repository(url: "dav:http://gradle.artifactoryonline.com/gradle/plugins-releases-local") {
             authentication(userName: gradleIntellijPlugin_artifactoryId, password: gradleIntellijPlugin_artifactoryPassword)
         }
     }
-//    repositories {
-//        uploadDescriptor = false
-//        org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials('Artifactory Realm', "gradle.artifactoryonline.com", "hansd", "KW2Sqk9J")
-//        add(new org.apache.ivy.plugins.resolver.URLResolver()) {
-//            m2compatible = true
-//            name = 'artifactory-publish'
-//            addArtifactPattern("http://gradle.artifactoryonline.com/gradle/libs-releases-local/[module]/[revision]/[artifact]-[revision].[ext]")
-//        }
-//    }
 }
 

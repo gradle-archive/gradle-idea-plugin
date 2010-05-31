@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.plugins.idea
+package org.gradle.plugins.intellij
 
 import org.gradle.api.DefaultTask
-import groovy.util.slurpersupport.GPathResult
+
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.artifacts.maven.XmlProvider
+
 import org.gradle.api.Action
 import org.gradle.listener.ListenerBroadcast
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
+import org.gradle.plugins.intellij.model.Path
+import org.gradle.plugins.intellij.model.Project
 
 /**
  * A task that generates and Idea ipr file.
@@ -49,7 +51,7 @@ public class IdeaProject extends DefaultTask {
     String javaVersion
 
     /**
-     * The wildscard resource patterns. Must not be null.
+     * The wildcard resource patterns. Must not be null.
      */
     @Input
     Set wildcards
@@ -66,7 +68,7 @@ public class IdeaProject extends DefaultTask {
     void updateXML() {
         Reader xmlreader = outputFile.exists() ? new FileReader(outputFile) : null;
         Set modules = subprojects.collect { subproject ->
-            if (subproject.plugins.hasPlugin(IdeaPlugin)) {
+            if (subproject.plugins.hasPlugin(IntellijPlugin)) {
                 File imlFile = subproject.ideaModule.outputFile
                 new Path(project.projectDir, '$PROJECT_DIR$', imlFile)
             }
@@ -92,7 +94,7 @@ public class IdeaProject extends DefaultTask {
      * of this xml is used to populate the domain objects that model the customizable aspects of the ipr file.
      * The closure is called before the parameter of this task are added to the domain objects. This hook allows you
      * to do a partial clean for example. You can delete all modules from the existing xml while keeping all the other
-     * parts. The closure gets an instance of {@link Project} which can be modified.
+     * parts. The closure gets an instance of {@link org.gradle.plugins.intellij.model.Project} which can be modified.
      *
      * @param closure The closure to execute when the existing or default ipr xml has been parsed.
      * @return this
@@ -107,7 +109,7 @@ public class IdeaProject extends DefaultTask {
      * Those objects are populated with the content of the existing or default ipr xml and the arguments of this task.
      * The closure gets an instance of {@link Project} which can be modified.
      *
-     * @param closure The closure to execute after the {@link Project} object has been fully populated.
+     * @param closure The closure to execute after the {@link org.gradle.plugins.intellij.model.Project} object has been fully populated.
      * @return this
      */
     IdeaProject whenConfigured(Closure closure) {

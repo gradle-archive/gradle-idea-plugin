@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.plugins.idea
+package org.gradle.plugins.intellij.model
+
+import org.gradle.plugins.intellij.Path
+import org.gradle.plugins.intellij.JarDirectory
 
 /**
  * Represents an orderEntry of type module-library in the iml xml.
@@ -22,22 +25,22 @@ package org.gradle.plugins.idea
  */
 class ModuleLibrary implements Dependency {
     /**
-     * A set of {@link Path} instances for class libraries.
+     * A set of {@link org.gradle.plugins.intellij.model.Path} instances for class libraries.
      */
     Set classes
 
     /**
-     * A set of {@link JarDirectory} instances for directories containing jars.
+     * A set of {@link org.gradle.plugins.intellij.model.JarDirectory} instances for directories containing jars.
      */
     Set jarDirectories
 
     /**
-     * A set of {@link Path} instances for javadoc associated with the library elements.
+     * A set of {@link org.gradle.plugins.intellij.model.Path} instances for javadoc associated with the library elements.
      */
     Set javadoc
 
     /**
-     * A set of {@link Path} instances for source code associated with the library elements.
+     * A set of {@link org.gradle.plugins.intellij.model.Path} instances for source code associated with the library elements.
      */
     Set sources
 
@@ -45,6 +48,8 @@ class ModuleLibrary implements Dependency {
      * The scope of this dependency. If null the scope attribute is not added.
      */
     String scope
+
+    boolean exported = false
 
     def ModuleLibrary(classes, javadoc, sources, jarDirectories, scope) {
         this.classes = classes;
@@ -55,10 +60,18 @@ class ModuleLibrary implements Dependency {
     }
 
     void addToNode(Node parentNode) {
-        Node libraryNode = parentNode.appendNode('orderEntry', [type: 'module-library'] + (scope ? [scope: scope] : [:])).appendNode('library')
+        Node libraryNode = parentNode.appendNode('orderEntry', [type: 'module-library'] + (exported ? [exported: ""] : [:]) + (scope ? [scope: scope] : [:])).appendNode('library')
         Node classesNode = libraryNode.appendNode('CLASSES')
+        Node javadocNode = libraryNode.appendNode('JAVADOC')
+        Node sourcesNode = libraryNode.appendNode('SOURCES')
         classes.each { Path path ->
             classesNode.appendNode('root', [url: path.url])
+        }
+        javadoc.each { Path path ->
+            javadocNode.appendNode('root', [url: path.url])
+        }
+        sources.each { Path path ->
+            sourcesNode.appendNode('root', [url: path.url])
         }
         jarDirectories.each { JarDirectory jarDirectory ->
             libraryNode.appendNode('jarDirectory', [url: jarDirectory.path.url, recursive: jarDirectory.recursive])

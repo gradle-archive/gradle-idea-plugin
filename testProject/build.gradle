@@ -1,4 +1,5 @@
-import org.gradle.plugins.idea.IdeaPlugin
+import org.gradle.plugins.intellij.IntellijPlugin
+import org.gradle.plugins.intellij.IntellijPlugin
 
 buildscript {
     dependencies {
@@ -25,7 +26,7 @@ subprojects {
 }
 
 allprojects {
-    apply plugin: IdeaPlugin
+    apply plugin: IntellijPlugin
 }
 
 

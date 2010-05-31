@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.plugins.idea
+package org.gradle.plugins.intellij.model
 
 /**
  * Represents a the information for the project JavaSDK. This information are attributes of the ProjectRootManager

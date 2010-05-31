@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.plugins.idea
+package org.gradle.plugins.intellij.model
 
 import org.gradle.api.Action
 import org.gradle.listener.ListenerBroadcast
+import org.gradle.plugins.intellij.Path
+import org.gradle.plugins.intellij.JarDirectory
+import org.gradle.plugins.intellij.ModuleLibrary
+import org.gradle.plugins.intellij.ModuleDependency
 
 /**
  * Represents the customizable elements of an iml (via XML hooks everything of the iml is customizable).

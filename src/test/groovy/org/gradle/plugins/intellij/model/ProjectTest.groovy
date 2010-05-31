@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.plugins.idea
+package org.gradle.plugins.intellij.model
 
 import spock.lang.Specification
 import org.gradle.listener.ListenerBroadcast
 import org.gradle.api.Action
-
+import org.gradle.plugins.intellij.model.Jdk
+import org.gradle.plugins.intellij.model.Path
+import org.gradle.plugins.intellij.model.Project
 
 /**
  * @author Hans Dockter

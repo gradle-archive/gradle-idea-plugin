@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.plugins.idea
+package org.gradle.plugins.intellij
+
+import org.gradle.plugins.intellij.model.Dependency
 
 /**
  * Represents an orderEntry of type module in the iml xml.
@@ -31,13 +33,15 @@ class ModuleDependency implements Dependency {
      */
     String scope
 
+    boolean exported = false
+
     def ModuleDependency(name, scope) {
         this.name = name;
         this.scope = scope;
     }
 
     void addToNode(Node parentNode) {
-        parentNode.appendNode('orderEntry', [type: 'module', 'module-name': name, exported: ''] + (scope ? [scope: scope] : [:]))
+        parentNode.appendNode('orderEntry', [type: 'module', 'module-name': name] + (exported ? [exported: ""] : [:]) + (scope ? [scope: scope] : [:]))
     }
 
     boolean equals(o) {

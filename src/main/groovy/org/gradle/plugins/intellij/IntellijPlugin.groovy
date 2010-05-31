@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.plugins.idea;
+package org.gradle.plugins.intellij;
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.tasks.Delete
+
 import org.gradle.api.JavaVersion
 
 /**
@@ -31,11 +31,11 @@ import org.gradle.api.JavaVersion
  *
  * If the java plugin is or has been added to a project where this plugin is applied to, the IdeaModule task
  */
-class IdeaPlugin implements Plugin<Project> {
+class IntellijPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.configure(project) {
-            task('ideaClean', description: 'Cleans IDEA project files (IML, IPR and IWS)', type: Delete)
-            task('idea', description: 'Generates IDEA project files (IML, IPR and IWS)')
+            task('cleanIdea', description: 'Cleans IDEA project files (IML, IPR)')
+            task('idea', description: 'Generates IDEA project files (IML, IPR)')
             if (isRoot(project)) {
                 task('ideaProject', description: 'Generates IDEA project file (IPR)', type: IdeaProject) {
                     outputFile = new File(project.projectDir, project.name + ".ipr")
@@ -44,7 +44,8 @@ class IdeaPlugin implements Plugin<Project> {
                     wildcards = ['!?*.java', '!?*.groovy']
                 }
                 project.idea.dependsOn 'ideaProject'
-                project.ideaClean.delete project.ideaProject.outputFile
+
+                project.cleanIdea.dependsOn "cleanIdeaProject"
             }
             task('ideaModule', description: 'Generates IDEA module files (IML)', type: IdeaModule) {
                 outputFile = new File(project.projectDir, project.name + ".iml")
@@ -55,7 +56,9 @@ class IdeaPlugin implements Plugin<Project> {
                 excludeDirs = []
             }
             project.idea.dependsOn 'ideaModule'
-            project.ideaClean.delete project.ideaModule.outputFile
+
+            project.cleanIdea.dependsOn "cleanIdeaModule"
+            
             plugins.withType(JavaPlugin).allPlugins {
                 if (isRoot(project)) {
                     project.ideaProject {

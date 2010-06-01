@@ -7,15 +7,14 @@ buildscript {
         mavenRepo urls: 'http://gradle.artifactoryonline.com/gradle/plugins'
     }
     dependencies {
-//        classpath "org.gradle.plugins:gradle-idea-plugin:0.1"
-        classpath fileTree("build/libs")
+        classpath "org.gradle.plugins:gradle-idea-plugin:0.1"
     }
 }
 
 apply plugin: 'groovy'
 apply plugin: 'maven'
 apply plugin: 'org.gradle.idea'
-
+ 
 group = 'org.gradle.plugins'
 version = '0.1' // + new SimpleDateFormat('yyyyMMddHHmmssZ').format(new Date())
 

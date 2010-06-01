@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.plugins.intellij.model
+package org.gradle.plugins.idea.model
 
 /**
  * Represents an orderEntry of type module-library in the iml xml.
@@ -22,22 +22,22 @@ package org.gradle.plugins.intellij.model
  */
 class ModuleLibrary implements Dependency {
     /**
-     * A set of {@link org.gradle.plugins.intellij.model.Path} instances for class libraries.
+     * A set of {@link org.gradle.plugins.idea.model.Path} instances for class libraries.
      */
     Set classes
 
     /**
-     * A set of {@link org.gradle.plugins.intellij.model.JarDirectory} instances for directories containing jars.
+     * A set of {@link org.gradle.plugins.idea.model.JarDirectory} instances for directories containing jars.
      */
     Set jarDirectories
 
     /**
-     * A set of {@link org.gradle.plugins.intellij.model.Path} instances for javadoc associated with the library elements.
+     * A set of {@link org.gradle.plugins.idea.model.Path} instances for javadoc associated with the library elements.
      */
     Set javadoc
 
     /**
-     * A set of {@link org.gradle.plugins.intellij.model.Path} instances for source code associated with the library elements.
+     * A set of {@link org.gradle.plugins.idea.model.Path} instances for source code associated with the library elements.
      */
     Set sources
 

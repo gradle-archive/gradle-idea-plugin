@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.plugins.intellij.model
+package org.gradle.plugins.idea.model
 
 /**
  * Represents a jar directory element of an idea module library.

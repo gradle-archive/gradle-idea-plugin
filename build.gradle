@@ -7,14 +7,14 @@ buildscript {
         mavenRepo urls: 'http://gradle.artifactoryonline.com/gradle/plugins'
     }
     dependencies {
-//        classpath "org.gradle.plugins:gradle-intellij-plugin:0.1"
+//        classpath "org.gradle.plugins:gradle-idea-plugin:0.1"
         classpath fileTree("build/libs")
     }
 }
 
 apply plugin: 'groovy'
 apply plugin: 'maven'
-apply plugin: 'org.gradle.intellij'
+apply plugin: 'org.gradle.idea'
 
 group = 'org.gradle.plugins'
 version = '0.1' // + new SimpleDateFormat('yyyyMMddHHmmssZ').format(new Date())
@@ -50,4 +50,7 @@ uploadArchives {
 
 ideaProject {
     javaVersion = '1.6'
+    withXml { root ->
+        root.component.find { it.@name == 'VcsDirectoryMappings' }.mapping.@vcs = 'Git'
+    }
 }

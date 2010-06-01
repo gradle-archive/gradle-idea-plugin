@@ -23,7 +23,7 @@ subprojects {
 }
 
 allprojects {
-    apply plugin: 'org.gradle.intellij'
+    apply plugin: 'org.gradle.idea'
 }
 
 

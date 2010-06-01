@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.plugins.intellij
+package org.gradle.plugins.idea
 
 import org.gradle.api.DefaultTask
 
@@ -23,8 +23,8 @@ import org.gradle.api.Action
 import org.gradle.listener.ListenerBroadcast
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
-import org.gradle.plugins.intellij.model.Path
-import org.gradle.plugins.intellij.model.Project
+import org.gradle.plugins.idea.model.Path
+import org.gradle.plugins.idea.model.Project
 
 /**
  * A task that generates and Idea ipr file.
@@ -68,7 +68,7 @@ public class IdeaProject extends DefaultTask {
     void updateXML() {
         Reader xmlreader = outputFile.exists() ? new FileReader(outputFile) : null;
         Set modules = subprojects.collect { subproject ->
-            if (subproject.plugins.hasPlugin(IntellijPlugin)) {
+            if (subproject.plugins.hasPlugin(IdeaPlugin)) {
                 File imlFile = subproject.ideaModule.outputFile
                 new Path(project.projectDir, '$PROJECT_DIR$', imlFile)
             }
@@ -109,7 +109,7 @@ public class IdeaProject extends DefaultTask {
      * Those objects are populated with the content of the existing or default ipr xml and the arguments of this task.
      * The closure gets an instance of {@link Project} which can be modified.
      *
-     * @param closure The closure to execute after the {@link org.gradle.plugins.intellij.model.Project} object has been fully populated.
+     * @param closure The closure to execute after the {@link org.gradle.plugins.idea.model.Project} object has been fully populated.
      * @return this
      */
     IdeaProject whenConfigured(Closure closure) {

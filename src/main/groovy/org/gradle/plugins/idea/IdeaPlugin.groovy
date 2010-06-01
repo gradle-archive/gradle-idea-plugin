@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.plugins.intellij;
+package org.gradle.plugins.idea;
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -29,7 +29,7 @@ import org.gradle.api.JavaVersion
  *
  * If the java plugin is or has been added to a project where this plugin is applied to, the IdeaModule task
  */
-class IntellijPlugin implements Plugin<Project> {
+class IdeaPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.configure(project) {
             apply plugin: 'base' // We apply the base plugin to have the clean<taskname> rule

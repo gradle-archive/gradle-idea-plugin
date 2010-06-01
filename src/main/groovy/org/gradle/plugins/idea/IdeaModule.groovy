@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.plugins.intellij
+package org.gradle.plugins.idea
 
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
 import org.gradle.api.specs.Specs
 import org.gradle.listener.ListenerBroadcast
-import org.gradle.plugins.intellij.model.Module
-import org.gradle.plugins.intellij.model.ModuleDependency
-import org.gradle.plugins.intellij.model.ModuleLibrary
-import org.gradle.plugins.intellij.model.Path
+import org.gradle.plugins.idea.model.Module
+import org.gradle.plugins.idea.model.ModuleDependency
+import org.gradle.plugins.idea.model.ModuleLibrary
+import org.gradle.plugins.idea.model.Path
 import org.gradle.api.artifacts.*
 import org.gradle.api.tasks.*
 
@@ -56,19 +56,19 @@ public class IdeaModule extends DefaultTask {
     Set testSourceDirs
 
     /**
-     * The dirs to be excluded by intellij. Must not be null.
+     * The dirs to be excluded by idea. Must not be null.
      */
     @InputFiles
     def excludeDirs
 
     /**
-     * The intellij output dir for the production sources. If null no entry for output dirs is created.
+     * The idea output dir for the production sources. If null no entry for output dirs is created.
      */
     @InputFiles @Optional
     File outputDir
 
     /**
-     * The intellij output dir for the test sources. If null no entry for test output dirs is created.
+     * The idea output dir for the test sources. If null no entry for test output dirs is created.
      */
     @InputFiles @Optional
     File testOutputDir

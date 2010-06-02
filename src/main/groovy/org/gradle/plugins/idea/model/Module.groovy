@@ -71,7 +71,6 @@ class Module {
         if (outputDir) this.outputDir = outputDir;
         if (testOutputDir) this.testOutputDir = testOutputDir;
         this.dependencies.addAll(dependencies);
-        this.dependencies.each { println it }
         this.withXmlActions = withXmlActions;
 
         whenConfiguredActions.source.execute(this)

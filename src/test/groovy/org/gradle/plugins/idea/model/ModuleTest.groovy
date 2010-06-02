@@ -18,6 +18,7 @@ package org.gradle.plugins.idea.model
 import org.gradle.api.Action
 import org.gradle.listener.ListenerBroadcast
 import spock.lang.Specification
+import org.gradle.plugins.idea.model.Module.VariableReplacement
 
 /**
  * @author Hans Dockter
@@ -27,9 +28,12 @@ class ModuleTest extends Specification {
     def CUSTOM_TEST_SOURCE_FOLDERS = [new Path('file://$MODULE_DIR$/srcTest')] as LinkedHashSet
     def CUSTOM_EXCLUDE_FOLDERS = [new Path('file://$MODULE_DIR$/target')] as LinkedHashSet
     def CUSTOM_DEPENDENCIES = [
-            new ModuleLibrary([new Path('file://$MODULE_DIR$/ant/lib'), new Path('jar://$MODULE_DIR$/gradle.jar!/')] as Set, [] as Set, [] as Set,
+            new ModuleLibrary([new Path('file://$MODULE_DIR$/gradle/lib')] as Set,
+                    [new Path('file://$MODULE_DIR$/gradle/javadoc')] as Set, [new Path('file://$MODULE_DIR$/gradle/src')] as Set,
+                    [] as Set, null),
+            new ModuleLibrary([new Path('file://$MODULE_DIR$/ant/lib'), new Path('jar://$GRADLE_CACHE$/gradle.jar!/')] as Set, [] as Set, [] as Set,
                     [new JarDirectory(new Path('file://$MODULE_DIR$/ant/lib'), false)] as Set, "RUNTIME"),
-            new ModuleDependency('someModule', null)] as Set
+            new ModuleDependency('someModule', null)]
 
     Module module
 
@@ -42,7 +46,33 @@ class ModuleTest extends Specification {
         module.excludeFolders == CUSTOM_EXCLUDE_FOLDERS
         module.outputDir == new Path('file://$MODULE_DIR$/out')
         module.testOutputDir == new Path('file://$MODULE_DIR$/outTest')
-        module.dependencies == CUSTOM_DEPENDENCIES
+        (module.dependencies as List) == CUSTOM_DEPENDENCIES
+    }
+
+    def initWithReaderAndDependencyVars() {
+        def replacable = '$GRADLE_CACHE$'
+        def replacer = '$MODULE_DIR$/../'
+        module = createModule(dependencyVariableReplacement: new VariableReplacement(replacable: replacable, replacer: replacer), reader: customModuleReader)
+
+        expect:
+        module.sourceFolders == CUSTOM_SOURCE_FOLDERS
+        module.testSourceFolders == CUSTOM_TEST_SOURCE_FOLDERS
+        module.excludeFolders == CUSTOM_EXCLUDE_FOLDERS
+        module.outputDir == new Path('file://$MODULE_DIR$/out')
+        module.testOutputDir == new Path('file://$MODULE_DIR$/outTest')
+        def expectedDependencies = CUSTOM_DEPENDENCIES.collect { dependency ->
+            if (dependency instanceof ModuleLibrary) {
+                dependency.classes = dependency.classes.collect { Path path ->
+                    Path newPath = path
+                    if (path.url.contains(replacable)) {
+                        newPath = new Path(path.url.replace(replacable, replacer))
+                    }
+                    newPath
+                }
+            }
+            dependency
+        }
+        module.dependencies == (expectedDependencies as Set)
     }
 
     def initWithReaderAndValues_shouldBeMerged() {
@@ -51,7 +81,9 @@ class ModuleTest extends Specification {
         def constructorExcludeFolders = [new Path('c')] as Set
         def constructorOutputDir = new Path('someOut')
         def constructorTestOutputDir = new Path('someTestOut')
-        def constructorModuleDependencies = [new ModuleLibrary([new Path('x')], [], [], [new JarDirectory(new Path('y'), false)], null)] as Set
+        def constructorModuleDependencies = [
+                CUSTOM_DEPENDENCIES[0],
+                new ModuleLibrary([new Path('x')], [], [], [new JarDirectory(new Path('y'), false)], null)] as LinkedHashSet
         module = createModule(sourceFolders: constructorSourceFolders, testSourceFolders: constructorTestSourceFolders,
                 excludeFolders: constructorExcludeFolders, outputDir: constructorOutputDir, testOutputDir: constructorTestOutputDir,
                 moduleLibraries: constructorModuleDependencies, reader: customModuleReader)
@@ -62,7 +94,7 @@ class ModuleTest extends Specification {
         module.excludeFolders == CUSTOM_EXCLUDE_FOLDERS + constructorExcludeFolders
         module.outputDir == constructorOutputDir
         module.testOutputDir == constructorTestOutputDir
-        module.dependencies == CUSTOM_DEPENDENCIES + constructorModuleDependencies
+        module.dependencies == (CUSTOM_DEPENDENCIES as LinkedHashSet) + constructorModuleDependencies
     }
 
     def initWithNullReader_shouldUseDefaultValuesAndMerge() {
@@ -169,9 +201,10 @@ class ModuleTest extends Specification {
     private Module createModule(Map customArgs) {
         ListenerBroadcast dummyBroadcast = new ListenerBroadcast(Action)
         Map args = [sourceFolders: [] as Set, testSourceFolders: [] as Set, excludeFolders: [] as Set, outputDir: null, testOutputDir: null,
-                moduleLibraries: [] as Set, reader: null,
+                moduleLibraries: [] as Set, dependencyVariableReplacement: VariableReplacement.NO_REPLACEMENT, reader: null,
                 beforeConfiguredActions: dummyBroadcast, whenConfiguredActions: dummyBroadcast, withXmlActions: dummyBroadcast] + customArgs
-        return new Module(args.sourceFolders, args.testSourceFolders, args.excludeFolders, args.outputDir, args.testOutputDir, args.moduleLibraries, args.reader,
+        return new Module(args.sourceFolders, args.testSourceFolders, args.excludeFolders, args.outputDir, args.testOutputDir,
+                args.moduleLibraries, args.dependencyVariableReplacement, args.reader,
                 args.beforeConfiguredActions, args.whenConfiguredActions, args.withXmlActions)
     }
 }

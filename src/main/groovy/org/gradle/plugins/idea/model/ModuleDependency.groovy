@@ -39,7 +39,11 @@ class ModuleDependency implements Dependency {
     }
 
     void addToNode(Node parentNode) {
-        parentNode.appendNode('orderEntry', [type: 'module', 'module-name': name] + (exported ? [exported: ""] : [:]) + (scope ? [scope: scope] : [:]))
+        parentNode.appendNode('orderEntry', [type: 'module', 'module-name': name] + getAttributeMapForScopeAndExported())
+    }
+
+    private Map getAttributeMapForScopeAndExported() {
+        return (exported ? [exported: ""] : [:]) + ((scope && scope != 'COMPILE') ? [scope: scope] : [:])
     }
 
     boolean equals(o) {
@@ -50,17 +54,31 @@ class ModuleDependency implements Dependency {
         ModuleDependency that = (ModuleDependency) o;
 
         if (name != that.name) return false;
-        if (scope != that.scope) return false;
+        if (!scopeEquals(scope, that.scope)) return false;
 
         return true;
+    }
+
+    private boolean scopeEquals(String lhs, String rhs) {
+        if (lhs == 'COMPILE') {
+            return !rhs || rhs == 'COMPILE'
+        } else if (rhs == 'COMPILE') {
+            return !lhs || lhs == 'COMPILE'
+        } else {
+            return lhs == rhs
+        }
     }
 
     int hashCode() {
         int result;
 
         result = name.hashCode();
-        result = 31 * result + (scope != null ? scope.hashCode() : 0);
+        result = 31 * result + getScopeHash();
         return result;
+    }
+
+    private int getScopeHash() {
+        (scope && scope != 'COMPILE' ? scope.hashCode() : 0)
     }
 
     public String toString() {

@@ -25,7 +25,7 @@ import org.gradle.api.Action
  */
 class Project {
     /**
-     * A set of {@link Path} instances pointing to the modules contained in the ipr.
+     * A set of {@link ModulePath} instances pointing to the modules contained in the ipr.
      */
     Set modulePaths = []
 
@@ -61,7 +61,7 @@ class Project {
         xml = new XmlParser().parse(reader)
 
         findModules().module.each { module ->
-            this.modulePaths.add(new Path(module.@fileurl, module.@filepath))
+            this.modulePaths.add(new ModulePath(module.@fileurl, module.@filepath))
         }
 
         findWildcardResourcePatterns().entry.each { entry ->
@@ -79,7 +79,7 @@ class Project {
     def toXml(Writer writer) {
         findModules().replaceNode {
             modules {
-                modulePaths.each { Path modulePath ->
+                modulePaths.each { ModulePath modulePath ->
                     module(fileurl: modulePath.url, filepath: modulePath.path)
                 }
             }

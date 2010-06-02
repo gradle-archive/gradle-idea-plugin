@@ -45,7 +45,7 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/gradle-intellij-plugin.iml" filepath="$PROJECT_DIR$/gradle-intellij-plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gradle-idea-plugin.iml" filepath="$PROJECT_DIR$/gradle-idea-plugin.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="false" project-jdk-name="1.4">

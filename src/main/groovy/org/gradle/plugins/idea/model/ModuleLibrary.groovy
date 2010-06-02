@@ -22,22 +22,22 @@ package org.gradle.plugins.idea.model
  */
 class ModuleLibrary implements Dependency {
     /**
-     * A set of {@link org.gradle.plugins.idea.model.Path} instances for class libraries.
+     * A set of  {@link org.gradle.plugins.idea.model.Path}  instances for class libraries.
      */
     Set classes
 
     /**
-     * A set of {@link org.gradle.plugins.idea.model.JarDirectory} instances for directories containing jars.
+     * A set of  {@link org.gradle.plugins.idea.model.JarDirectory}  instances for directories containing jars.
      */
     Set jarDirectories
 
     /**
-     * A set of {@link org.gradle.plugins.idea.model.Path} instances for javadoc associated with the library elements.
+     * A set of  {@link org.gradle.plugins.idea.model.Path}  instances for javadoc associated with the library elements.
      */
     Set javadoc
 
     /**
-     * A set of {@link org.gradle.plugins.idea.model.Path} instances for source code associated with the library elements.
+     * A set of  {@link org.gradle.plugins.idea.model.Path}  instances for source code associated with the library elements.
      */
     Set sources
 
@@ -57,7 +57,7 @@ class ModuleLibrary implements Dependency {
     }
 
     void addToNode(Node parentNode) {
-        Node libraryNode = parentNode.appendNode('orderEntry', [type: 'module-library'] + (exported ? [exported: ""] : [:]) + (scope ? [scope: scope] : [:])).appendNode('library')
+        Node libraryNode = parentNode.appendNode('orderEntry', [type: 'module-library'] + getAttributeMapForScopeAndExported()).appendNode('library')
         Node classesNode = libraryNode.appendNode('CLASSES')
         Node javadocNode = libraryNode.appendNode('JAVADOC')
         Node sourcesNode = libraryNode.appendNode('SOURCES')
@@ -75,6 +75,10 @@ class ModuleLibrary implements Dependency {
         }
     }
 
+    private Map getAttributeMapForScopeAndExported() {
+        return (exported ? [exported: ""] : [:]) + ((scope && scope != 'COMPILE') ? [scope: scope] : [:])
+    }
+
 
     boolean equals(o) {
         if (this.is(o)) return true;
@@ -86,11 +90,22 @@ class ModuleLibrary implements Dependency {
         if (classes != that.classes) return false;
         if (jarDirectories != that.jarDirectories) return false;
         if (javadoc != that.javadoc) return false;
-        if (scope != that.scope) return false;
+        if (!scopeEquals(scope, that.scope)) return false;
         if (sources != that.sources) return false;
 
         return true;
     }
+
+    private boolean scopeEquals(String lhs, String rhs) {
+        if (lhs == 'COMPILE') {
+            return !rhs || rhs == 'COMPILE'
+        } else if (rhs == 'COMPILE') {
+            return !lhs || lhs == 'COMPILE'
+        } else {
+            return lhs == rhs
+        }
+    }
+
 
     int hashCode() {
         int result;
@@ -99,8 +114,12 @@ class ModuleLibrary implements Dependency {
         result = 31 * result + jarDirectories.hashCode();
         result = 31 * result + javadoc.hashCode();
         result = 31 * result + sources.hashCode();
-        result = 31 * result + (scope != null ? scope.hashCode() : 0);
+        result = 31 * result + getScopeHash()
         return result;
+    }
+
+    private int getScopeHash() {
+        (scope && scope != 'COMPILE' ? scope.hashCode() : 0)
     }
 
     public String toString() {

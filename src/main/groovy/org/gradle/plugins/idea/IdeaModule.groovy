@@ -26,6 +26,7 @@ import org.gradle.plugins.idea.model.ModuleLibrary
 import org.gradle.plugins.idea.model.Path
 import org.gradle.api.artifacts.*
 import org.gradle.api.tasks.*
+import org.gradle.plugins.idea.model.Module.VariableReplacement
 
 /**
  * @author Hans Dockter
@@ -79,8 +80,17 @@ public class IdeaModule extends DefaultTask {
     @Input
     boolean downloadSources = true
 
+    /**
+     * Whether to download and add javadoc associated with the dependency jars. Defaults to true.
+     */
     @Input
     boolean downloadJavadoc = true
+
+    @Input @Optional
+    String gradleCacheVariable
+
+    @InputFiles @Optional
+    File gradleCacheHome
 
     /**
      * The keys of this map are the Intellij scopes. Each key points to another map that has two keys, plus and minus.
@@ -101,7 +111,7 @@ public class IdeaModule extends DefaultTask {
     void updateXML() {
         Reader xmlreader = outputFile.exists() ? new FileReader(outputFile) : null;
         Module module = new Module(getSourcePaths(), getTestSourcePaths(), getExcludePaths(), getOutputPath(), getTestOutputPath(),
-                getDependencies(), xmlreader, beforeConfiguredActions, whenConfiguredActions, withXmlActions)
+                getDependencies(), getVariableReplacement(), xmlreader, beforeConfiguredActions, whenConfiguredActions, withXmlActions)
         module.toXml(new FileWriter(outputFile))
     }
 
@@ -129,6 +139,14 @@ public class IdeaModule extends DefaultTask {
         scopes.keySet().inject([] as LinkedHashSet) {result, scope ->
             result + (getModuleLibraries(scope) + getModules(scope))
         }
+    }
+
+    protected getVariableReplacement() {
+        if (gradleCacheHome && gradleCacheVariable) {
+            String replacer = org.gradle.plugins.idea.model.Path.getRelativePath(outputFile.parentFile, '$MODULE_DIR$', gradleCacheHome)
+            return new VariableReplacement(replacer: replacer, replacable: '$' + gradleCacheVariable + '$')
+        }
+        return VariableReplacement.NO_REPLACEMENT
     }
 
     protected Set getModules(String scope) {

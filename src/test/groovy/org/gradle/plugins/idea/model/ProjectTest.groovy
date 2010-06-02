@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.plugins.intellij.model
+package org.gradle.plugins.idea.model
 
-import spock.lang.Specification
-import org.gradle.listener.ListenerBroadcast
 import org.gradle.api.Action
-import org.gradle.plugins.intellij.model.Jdk
-import org.gradle.plugins.intellij.model.Path
-import org.gradle.plugins.intellij.model.Project
+import org.gradle.listener.ListenerBroadcast
+import spock.lang.Specification
 
 /**
  * @author Hans Dockter
@@ -32,7 +29,7 @@ class ProjectTest extends Specification {
         project = createProject(javaVersion: "1.4", reader: customProjectReader)
 
         expect:
-        project.modulePaths == [new Path('file://$PROJECT_DIR$/gradle-idea-plugin.iml', '$PROJECT_DIR$/gradle-idea-plugin.iml')] as Set
+        project.modulePaths == [new ModulePath('file://$PROJECT_DIR$/gradle-idea-plugin.iml', '$PROJECT_DIR$/gradle-idea-plugin.iml')] as Set
         project.wildcards == ["?*.gradle", "?*.grails"] as Set
         project.jdk == new Jdk(true, false, "1.4")
     }
@@ -41,7 +38,7 @@ class ProjectTest extends Specification {
         project = createProject(wildcards: ['?*.groovy'] as Set, reader: customProjectReader)
 
         expect:
-        project.modulePaths == [new Path('file://$PROJECT_DIR$/gradle-idea-plugin.iml', '$PROJECT_DIR$/gradle-idea-plugin.iml')] as Set
+        project.modulePaths == [new ModulePath('file://$PROJECT_DIR$/gradle-idea-plugin.iml', '$PROJECT_DIR$/gradle-idea-plugin.iml')] as Set
         project.wildcards == ["?*.gradle", "?*.grails", "?*.groovy"] as Set
         project.jdk == new Jdk("1.6")
     }
@@ -76,7 +73,7 @@ class ProjectTest extends Specification {
         beforeConfiguredActions.add("execute") { Project ideaProject ->
             ideaProject.modulePaths.clear()
         }
-        def modulePaths = [new Path("a", "b")] as Set
+        def modulePaths = [new ModulePath("a", "b")] as Set
 
         when:
         project = createProject(modulePaths: modulePaths, reader: customProjectReader, beforeConfiguredActions: beforeConfiguredActions)
@@ -87,8 +84,8 @@ class ProjectTest extends Specification {
 
     def whenConfigured() {
         def moduleFromInitialXml = null
-        def moduleFromProjectConstructor = new Path("a", "b")
-        def moduleAddedInWhenConfiguredAction = new Path("c", "d")
+        def moduleFromProjectConstructor = new ModulePath("a", "b")
+        def moduleAddedInWhenConfiguredAction = new ModulePath("c", "d")
         ListenerBroadcast beforeConfiguredActions = new ListenerBroadcast(Action)
         beforeConfiguredActions.add("execute") { Project ideaProject ->
             moduleFromInitialXml = (ideaProject.modulePaths as List)[0]

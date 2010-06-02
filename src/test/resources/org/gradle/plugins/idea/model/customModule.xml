@@ -11,11 +11,24 @@
             <excludeFolder url="file://$MODULE_DIR$/target"/>
         </content>
         <orderEntry type="sourceFolder" forTests="false"/>
+        <orderEntry type="module-library">
+            <library>
+                <CLASSES>
+                    <root url="file://$MODULE_DIR$/gradle/lib"/>
+                </CLASSES>
+                <JAVADOC>
+                    <root url="file://$MODULE_DIR$/gradle/javadoc"/>
+                </JAVADOC>
+                <SOURCES>
+                    <root url="file://$MODULE_DIR$/gradle/src"/>
+                </SOURCES>
+            </library>
+        </orderEntry>
         <orderEntry type="module-library" scope="RUNTIME">
             <library>
                 <CLASSES>
                     <root url="file://$MODULE_DIR$/ant/lib"/>
-                    <root url="jar://$MODULE_DIR$/gradle.jar!/"/>
+                    <root url="jar://$GRADLE_CACHE$/gradle.jar!/"/>
                 </CLASSES>
                 <JAVADOC/>
                 <SOURCES/>

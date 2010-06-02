@@ -59,9 +59,9 @@ class Module {
     private ListenerBroadcast<Action> withXmlActions
 
     def Module(Set sourceFolders, Set testSourceFolders, Set excludeFolders, Path outputDir, Path testOutputDir, Set dependencies,
-               Reader inputXml, ListenerBroadcast<Action> beforeConfiguredActions,
+               VariableReplacement dependencyVariableReplacement, Reader inputXml, ListenerBroadcast<Action> beforeConfiguredActions,
                ListenerBroadcast<Action> whenConfiguredActions, ListenerBroadcast<Action> withXmlActions) {
-        initFromXml(inputXml)
+        initFromXml(inputXml, dependencyVariableReplacement)
 
         beforeConfiguredActions.source.execute(this)
 
@@ -71,18 +71,19 @@ class Module {
         if (outputDir) this.outputDir = outputDir;
         if (testOutputDir) this.testOutputDir = testOutputDir;
         this.dependencies.addAll(dependencies);
+        this.dependencies.each { println it }
         this.withXmlActions = withXmlActions;
 
         whenConfiguredActions.source.execute(this)
     }
 
-    private def initFromXml(Reader inputXml) {
+    private def initFromXml(Reader inputXml, VariableReplacement dependencyVariableReplacement) {
         Reader reader = inputXml ?: new InputStreamReader(getClass().getResourceAsStream('defaultModule.xml'))
         xml = new XmlParser().parse(reader)
 
         readSourceAndExcludeFolderFromXml()
         readOutputDirsFromXml()
-        readDependenciesFromXml()
+        readDependenciesFromXml(dependencyVariableReplacement)
     }
 
     private def readOutputDirsFromXml() {
@@ -92,13 +93,22 @@ class Module {
         this.testOutputDir = testOutputDirUrl ? new Path(testOutputDirUrl) : null
     }
 
-    private def readDependenciesFromXml() {
+    private def readDependenciesFromXml(VariableReplacement dependencyVariableReplacement) {
         return findOrderEntries().each { orderEntry ->
             switch (orderEntry.@type) {
                 case "module-library":
-                    Set classes = orderEntry.library.CLASSES.root.collect { new Path(it.@url)}
+                    Set classes = orderEntry.library.CLASSES.root.collect {
+                        new Path(dependencyVariableReplacement.replace(it.@url))
+                    }
+                    Set javadoc = orderEntry.library.JAVADOC.root.collect {
+                        new Path(dependencyVariableReplacement.replace(it.@url))
+                    }
+                    Set sources = orderEntry.library.SOURCES.root.collect {
+                        new Path(dependencyVariableReplacement.replace(it.@url))
+                    }
                     Set jarDirectories = orderEntry.library.jarDirectory.collect { new JarDirectory(new Path(it.@url), Boolean.parseBoolean(it.@recursive)) }
-                    dependencies.add(new ModuleLibrary(classes, [] as Set, [] as Set, jarDirectories, orderEntry.@scope))
+                    def moduleLibrary = new ModuleLibrary(classes, javadoc, sources, jarDirectories, orderEntry.@scope)
+                    dependencies.add(moduleLibrary)
                     break
                 case "module":
                     dependencies.add(new ModuleDependency(orderEntry.@'module-name', orderEntry.@scope))
@@ -261,5 +271,19 @@ class Module {
                 ", outputDir=" + outputDir +
                 ", testOutputDir=" + testOutputDir +
                 '}';
+    }
+
+    static class VariableReplacement {
+        static VariableReplacement NO_REPLACEMENT = new VariableReplacement()
+
+        String replacable
+        String replacer
+
+        String replace(String source) {
+            if (replacable && replacer != null) {
+                return source.replace(replacable, replacer)
+            }
+            return source
+        }
     }
 }

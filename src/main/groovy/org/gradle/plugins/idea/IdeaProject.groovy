@@ -25,6 +25,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.plugins.idea.model.Path
 import org.gradle.plugins.idea.model.Project
+import org.gradle.plugins.idea.model.ModulePath
 
 /**
  * A task that generates and Idea ipr file.
@@ -70,7 +71,7 @@ public class IdeaProject extends DefaultTask {
         Set modules = subprojects.collect { subproject ->
             if (subproject.plugins.hasPlugin(IdeaPlugin)) {
                 File imlFile = subproject.ideaModule.outputFile
-                new Path(project.projectDir, '$PROJECT_DIR$', imlFile)
+                new ModulePath(project.projectDir, '$PROJECT_DIR$', imlFile)
             }
         }
         Project ideaProject = new Project(modules, javaVersion, wildcards, xmlreader, beforeConfiguredActions, whenConfiguredActions, withXmlActions)
@@ -94,7 +95,7 @@ public class IdeaProject extends DefaultTask {
      * of this xml is used to populate the domain objects that model the customizable aspects of the ipr file.
      * The closure is called before the parameter of this task are added to the domain objects. This hook allows you
      * to do a partial clean for example. You can delete all modules from the existing xml while keeping all the other
-     * parts. The closure gets an instance of {@link org.gradle.plugins.intellij.model.Project} which can be modified.
+     * parts. The closure gets an instance of {@link org.gradle.plugins.idea.model.Project} which can be modified.
      *
      * @param closure The closure to execute when the existing or default ipr xml has been parsed.
      * @return this

@@ -16,7 +16,7 @@ apply plugin: 'maven'
 apply plugin: 'org.gradle.idea'
  
 group = 'org.gradle.plugins'
-version = '0.1' // + new SimpleDateFormat('yyyyMMddHHmmssZ').format(new Date())
+version = '0.2' // + new SimpleDateFormat('yyyyMMddHHmmssZ').format(new Date())
 
 configurations {
     deployerJars

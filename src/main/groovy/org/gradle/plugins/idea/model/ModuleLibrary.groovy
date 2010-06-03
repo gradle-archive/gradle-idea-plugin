@@ -46,7 +46,7 @@ class ModuleLibrary implements Dependency {
      */
     String scope
 
-    boolean exported = false
+    boolean exported
 
     def ModuleLibrary(classes, javadoc, sources, jarDirectories, scope) {
         this.classes = classes;
@@ -54,6 +54,7 @@ class ModuleLibrary implements Dependency {
         this.javadoc = javadoc;
         this.sources = sources;
         this.scope = scope
+        this.exported = !scope || scope == 'COMPILE' || scope == 'RUNTIME'
     }
 
     void addToNode(Node parentNode) {

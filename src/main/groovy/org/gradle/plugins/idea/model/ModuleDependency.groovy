@@ -31,11 +31,12 @@ class ModuleDependency implements Dependency {
      */
     String scope
 
-    boolean exported = false
+    boolean exported
 
     def ModuleDependency(name, scope) {
         this.name = name;
         this.scope = scope;
+        this.exported = !scope || scope == 'COMPILE' || scope == 'RUNTIME'
     }
 
     void addToNode(Node parentNode) {

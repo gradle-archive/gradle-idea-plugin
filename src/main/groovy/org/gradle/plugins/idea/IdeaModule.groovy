@@ -89,7 +89,7 @@ public class IdeaModule extends DefaultTask {
     /**
      * If this variable is set, dependencies in the existing iml file will be parsed for this variable.
      * If they use it, it will be replaced with a path that has the $MODULE_DIR$ variable as a root and
-     * then a relative path to {@link #gradleCacheHome}. That way Gradle can recognize equal dependencies.
+     * then a relative path to  {@link #gradleCacheHome} . That way Gradle can recognize equal dependencies.
      */
     @Input @Optional
     String gradleCacheVariable
@@ -97,9 +97,12 @@ public class IdeaModule extends DefaultTask {
     @InputFiles @Optional
     File gradleCacheHome
 
+    @Input @Optional
+    String javaVersion = Module.INHERITED
+
     /**
      * The keys of this map are the Intellij scopes. Each key points to another map that has two keys, plus and minus.
-     * The values of those keys are sets of {@link org.gradle.api.artifacts.Configuration} objects. The files of the
+     * The values of those keys are sets of  {@link org.gradle.api.artifacts.Configuration}  objects. The files of the
      * plus configurations are added minus the files from the minus configurations.
      */
     Map scopes = [:]
@@ -116,7 +119,7 @@ public class IdeaModule extends DefaultTask {
     void updateXML() {
         Reader xmlreader = outputFile.exists() ? new FileReader(outputFile) : null;
         Module module = new Module(getSourcePaths(), getTestSourcePaths(), getExcludePaths(), getOutputPath(), getTestOutputPath(),
-                getDependencies(), getVariableReplacement(), xmlreader, beforeConfiguredActions, whenConfiguredActions, withXmlActions)
+                getDependencies(), getVariableReplacement(), javaVersion, xmlreader, beforeConfiguredActions, whenConfiguredActions, withXmlActions)
         module.toXml(new FileWriter(outputFile))
     }
 
@@ -156,7 +159,7 @@ public class IdeaModule extends DefaultTask {
 
     protected Set getModules(String scope) {
         if (scopes[scope]) {
-            return getScopeDependencies(scopes[scope], ProjectDependency).collect { ProjectDependency projectDependency ->
+            return getScopeDependencies(scopes[scope], { it instanceof ProjectDependency}).collect { ProjectDependency projectDependency ->
                 projectDependency.dependencyProject
             }.collect { project ->
                 new ModuleDependency(project.name, scope)
@@ -167,18 +170,18 @@ public class IdeaModule extends DefaultTask {
 
     protected Set getModuleLibraries(String scope) {
         if (scopes[scope]) {
-            Set firstLevelDependencies = getScopeDependencies(scopes[scope], ExternalDependency)
-            
+            Set firstLevelDependencies = getScopeDependencies(scopes[scope], { it instanceof ExternalDependency})
+
             ResolvedConfiguration resolvedConfiguration = project.configurations.detachedConfiguration((firstLevelDependencies as Dependency[])).resolvedConfiguration
             def allResolvedDependencies = getAllDeps(resolvedConfiguration.firstLevelModuleDependencies)
 
             Set sourceDependencies = getResolvableDependenciesForAllResolvedDependencies(allResolvedDependencies) { dependency ->
                 addSourceArtifact(dependency)
             }
-            Map sourceFiles = downloadSources ?  getFiles(sourceDependencies, "sources") : [:]
+            Map sourceFiles = downloadSources ? getFiles(sourceDependencies, "sources") : [:]
 
             Set javadocDependencies = getResolvableDependenciesForAllResolvedDependencies(allResolvedDependencies) { dependency ->
-                addJavadocArtifact(dependency)    
+                addJavadocArtifact(dependency)
             }
             Map javadocFiles = downloadJavadoc ? getFiles(javadocDependencies, "javadoc") : [:]
 
@@ -187,7 +190,8 @@ public class IdeaModule extends DefaultTask {
                 File javadocFile = javadocFiles[binaryFile.name]
                 new ModuleLibrary([getPath(binaryFile)] as Set, javadocFile ? [getPath(javadocFile)] as Set : [] as Set, sourceFile ? [getPath(sourceFile)] as Set : [] as Set, [] as Set, scope)
             }
-            moduleLibraries.addAll(getSelfResolvingFiles(getScopeDependencies(scopes[scope], SelfResolvingDependency), scope))
+            moduleLibraries.addAll(getSelfResolvingFiles(getScopeDependencies(scopes[scope],
+                    { it instanceof SelfResolvingDependency && !(it instanceof ProjectDependency)}), scope))
             return moduleLibraries
         }
         return []
@@ -202,13 +206,25 @@ public class IdeaModule extends DefaultTask {
         }
     }
 
-    private Set getScopeDependencies(Map configurations, Class type) {
+    private Set getScopeDependencies(Map configurations, Closure filter) {
         Set firstLevelDependencies = []
         configurations.plus.each { configuration ->
-            firstLevelDependencies += configuration.getAllDependencies(type)
+            firstLevelDependencies += configuration.getAllDependencies().findAll(filter)
         }
         configurations.minus.each { configuration ->
-            firstLevelDependencies -= configuration.getAllDependencies(type)
+            configuration.getAllDependencies().findAll(filter).each { minusDep ->
+                // This deals with dependencies that are defined in different scopes with different
+                // artifacts. Right now we accept the fact, that in such a situation some artifacts
+                // might be duplicated in Idea (they live in different scopes then). 
+                if (minusDep instanceof ExternalDependency) {
+                    ExternalDependency removeCandidate = firstLevelDependencies.find { it == minusDep }
+                    if (removeCandidate.artifacts == minusDep.artifacts) {
+                        firstLevelDependencies.remove(removeCandidate)
+                    }
+                } else {
+                    firstLevelDependencies.remove(minusDep)
+                }
+            }
         }
         return firstLevelDependencies
     }
@@ -234,7 +250,7 @@ public class IdeaModule extends DefaultTask {
     protected Set getAllDeps(Set deps) {
         Set result = []
         deps.each { ResolvedDependency resolvedDependency ->
-            if(resolvedDependency.children) {
+            if (resolvedDependency.children) {
                 result.addAll(getAllDeps(resolvedDependency.children))
             }
             result.add(resolvedDependency)

@@ -42,4 +42,13 @@ class ModuleLibraryTest extends Specification {
     private ModuleLibrary createModuleLibraryWithScope(String scope) {
         new ModuleLibrary([] as Set, [] as Set, [] as Set, [] as Set, scope)
     }
+
+    def shouldExportForCompileAndRuntimeScope() {
+        expect:
+        createModuleLibraryWithScope("COMPILE").exported
+        createModuleLibraryWithScope("RUNTIME").exported
+        createModuleLibraryWithScope("").exported
+        createModuleLibraryWithScope(null).exported
+        !(createModuleLibraryWithScope("TEST").exported)
+    }
 }

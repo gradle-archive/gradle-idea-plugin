@@ -24,6 +24,7 @@ import org.gradle.listener.ListenerBroadcast
  * @author Hans Dockter
  */
 class Module {
+    static final String INHERITED = "inherited"
     /**
      * The foldes for the production code. Must not be null.
      */
@@ -50,17 +51,20 @@ class Module {
     Path testOutputDir
 
     /**
-     * The dependencies of this module. Must not be null. Has instances of type {@link Dependency}.
+     * The dependencies of this module. Must not be null. Has instances of type   {@link Dependency}  .
      */
     Set dependencies = [] as LinkedHashSet
-    
+
+    String javaVersion
+
     private Node xml
 
     private ListenerBroadcast<Action> withXmlActions
 
     def Module(Set sourceFolders, Set testSourceFolders, Set excludeFolders, Path outputDir, Path testOutputDir, Set dependencies,
-               VariableReplacement dependencyVariableReplacement, Reader inputXml, ListenerBroadcast<Action> beforeConfiguredActions,
-               ListenerBroadcast<Action> whenConfiguredActions, ListenerBroadcast<Action> withXmlActions) {
+               VariableReplacement dependencyVariableReplacement, String javaVersion, Reader inputXml,
+               ListenerBroadcast<Action> beforeConfiguredActions, ListenerBroadcast<Action> whenConfiguredActions,
+               ListenerBroadcast<Action> withXmlActions) {
         initFromXml(inputXml, dependencyVariableReplacement)
 
         beforeConfiguredActions.source.execute(this)
@@ -71,6 +75,7 @@ class Module {
         if (outputDir) this.outputDir = outputDir;
         if (testOutputDir) this.testOutputDir = testOutputDir;
         this.dependencies.addAll(dependencies);
+        if (javaVersion) this.javaVersion = javaVersion
         this.withXmlActions = withXmlActions;
 
         whenConfiguredActions.source.execute(this)
@@ -79,10 +84,19 @@ class Module {
     private def initFromXml(Reader inputXml, VariableReplacement dependencyVariableReplacement) {
         Reader reader = inputXml ?: new InputStreamReader(getClass().getResourceAsStream('defaultModule.xml'))
         xml = new XmlParser().parse(reader)
-
+        readJdkFromXml()
         readSourceAndExcludeFolderFromXml()
         readOutputDirsFromXml()
         readDependenciesFromXml(dependencyVariableReplacement)
+    }
+
+    private def readJdkFromXml() {
+        def jdk = findOrderEntries().find { it.@type == 'jdk' }
+        if (jdk) {
+            this.javaVersion = jdk.@jdkName
+        } else {
+            this.javaVersion = INHERITED
+        }
     }
 
     private def readOutputDirsFromXml() {
@@ -134,6 +148,7 @@ class Module {
      * @param writer The writer where the iml xml is generated into.
      */
     def toXml(Writer writer) {
+        addJdkToXml()
         removeSourceAndExcludeFolderFromXml()
         addSourceAndExcludeFolderToXml()
         addOutputDirsToXml()
@@ -144,6 +159,26 @@ class Module {
         withXmlActions.source.execute(xml)
 
         new XmlNodePrinter(new PrintWriter(writer)).print(xml)
+    }
+
+    private def addJdkToXml() {
+        assert javaVersion != null
+        Node moduleJdk = findOrderEntries().find { it.@type == 'jdk' }
+        if (javaVersion != INHERITED) {
+            Node inheritedJdk = findOrderEntries().find { it.@type == "inheritedJdk" }
+            if (inheritedJdk) {
+                inheritedJdk.parent().remove(inheritedJdk)
+            }
+            if (moduleJdk) {
+                findNewModuleRootManager().remove(moduleJdk)
+            }
+            findNewModuleRootManager().appendNode("orderEntry", [type: "jdk", jdkName: javaVersion, jdkType: "JavaSDK"])
+        } else if (!(findOrderEntries().find { it.@type == "inheritedJdk" })) {
+            if (moduleJdk) {
+                findNewModuleRootManager().remove(moduleJdk)
+            }
+            findNewModuleRootManager().appendNode("orderEntry", [type: "inheritedJdk"])
+        }
     }
 
     private def addOutputDirsToXml() {

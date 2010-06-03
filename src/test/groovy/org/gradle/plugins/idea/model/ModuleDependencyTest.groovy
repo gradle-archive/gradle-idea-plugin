@@ -39,4 +39,13 @@ class ModuleDependencyTest extends Specification {
         new ModuleDependency("a", null).hashCode() == new ModuleDependency("a", "COMPILE").hashCode()
         new ModuleDependency("a", "").hashCode() == new ModuleDependency("a", "COMPILE").hashCode()
     }
+
+    def shouldExportForCompileAndRuntimeScope() {
+        expect:
+        new ModuleDependency("a", "COMPILE").exported
+        new ModuleDependency("a", "RUNTIME").exported
+        new ModuleDependency("a", "").exported
+        new ModuleDependency("a", null).exported
+        !(new ModuleDependency("a", "TEST").exported)
+    }
 }

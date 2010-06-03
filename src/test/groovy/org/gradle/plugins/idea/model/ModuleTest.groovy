@@ -41,6 +41,7 @@ class ModuleTest extends Specification {
         module = createModule(reader: customModuleReader)
 
         expect:
+        module.javaVersion == "1.6"
         module.sourceFolders == CUSTOM_SOURCE_FOLDERS
         module.testSourceFolders == CUSTOM_TEST_SOURCE_FOLDERS
         module.excludeFolders == CUSTOM_EXCLUDE_FOLDERS
@@ -80,13 +81,14 @@ class ModuleTest extends Specification {
         def constructorTestSourceFolders = [new Path('b')] as Set
         def constructorExcludeFolders = [new Path('c')] as Set
         def constructorOutputDir = new Path('someOut')
+        def constructorJavaVersion = '1.6'
         def constructorTestOutputDir = new Path('someTestOut')
         def constructorModuleDependencies = [
                 CUSTOM_DEPENDENCIES[0],
                 new ModuleLibrary([new Path('x')], [], [], [new JarDirectory(new Path('y'), false)], null)] as LinkedHashSet
         module = createModule(sourceFolders: constructorSourceFolders, testSourceFolders: constructorTestSourceFolders,
                 excludeFolders: constructorExcludeFolders, outputDir: constructorOutputDir, testOutputDir: constructorTestOutputDir,
-                moduleLibraries: constructorModuleDependencies, reader: customModuleReader)
+                moduleLibraries: constructorModuleDependencies, javaVersion: constructorJavaVersion, reader: customModuleReader)
 
         expect:
         module.sourceFolders == CUSTOM_SOURCE_FOLDERS + constructorSourceFolders
@@ -94,6 +96,7 @@ class ModuleTest extends Specification {
         module.excludeFolders == CUSTOM_EXCLUDE_FOLDERS + constructorExcludeFolders
         module.outputDir == constructorOutputDir
         module.testOutputDir == constructorTestOutputDir
+        module.javaVersion == constructorJavaVersion
         module.dependencies == (CUSTOM_DEPENDENCIES as LinkedHashSet) + constructorModuleDependencies
     }
 
@@ -102,6 +105,7 @@ class ModuleTest extends Specification {
         module = createModule(sourceFolders: constructorSourceFolders)
 
         expect:
+        module.javaVersion == Module.INHERITED
         module.sourceFolders == constructorSourceFolders
         module.dependencies.size() == 0
     }
@@ -120,7 +124,7 @@ class ModuleTest extends Specification {
         def constructorTestOutputDir = new Path('someTestOut')
 
         when:
-        this.module = createModule(sourceFolders: constructorSourceFolders, reader: defaultModuleReader,
+        this.module = createModule(javaVersion: '1.6', sourceFolders: constructorSourceFolders, reader: defaultModuleReader,
                 outputDir: constructorOutputDir, testOutputDir: constructorTestOutputDir)
         def module = createModule(reader: toXmlReader)
 
@@ -201,10 +205,10 @@ class ModuleTest extends Specification {
     private Module createModule(Map customArgs) {
         ListenerBroadcast dummyBroadcast = new ListenerBroadcast(Action)
         Map args = [sourceFolders: [] as Set, testSourceFolders: [] as Set, excludeFolders: [] as Set, outputDir: null, testOutputDir: null,
-                moduleLibraries: [] as Set, dependencyVariableReplacement: VariableReplacement.NO_REPLACEMENT, reader: null,
-                beforeConfiguredActions: dummyBroadcast, whenConfiguredActions: dummyBroadcast, withXmlActions: dummyBroadcast] + customArgs
+                moduleLibraries: [] as Set, dependencyVariableReplacement: VariableReplacement.NO_REPLACEMENT, javaVersion: null, 
+                reader: null, beforeConfiguredActions: dummyBroadcast, whenConfiguredActions: dummyBroadcast, withXmlActions: dummyBroadcast] + customArgs
         return new Module(args.sourceFolders, args.testSourceFolders, args.excludeFolders, args.outputDir, args.testOutputDir,
-                args.moduleLibraries, args.dependencyVariableReplacement, args.reader,
+                args.moduleLibraries, args.dependencyVariableReplacement, args.javaVersion, args.reader,
                 args.beforeConfiguredActions, args.whenConfiguredActions, args.withXmlActions)
     }
 }

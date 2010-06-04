@@ -75,6 +75,14 @@ public class IdeaModule extends DefaultTask {
     File testOutputDir
 
     /**
+     * If this is null the value of the existing or default ipr XML (inherited) is used. If it is set
+     * to <code>inherited</code>, the project SDK is used. Otherwise the SDK for the corresponding
+     * value of java version is used for this module
+     */
+    @Input @Optional
+    String javaVersion = Module.INHERITED
+
+    /**
      * Whether to download and add sources associated with the dependency jars. Defaults to true. 
      */
     @Input
@@ -96,9 +104,6 @@ public class IdeaModule extends DefaultTask {
 
     @InputFiles @Optional
     File gradleCacheHome
-
-    @Input @Optional
-    String javaVersion = Module.INHERITED
 
     /**
      * The keys of this map are the Intellij scopes. Each key points to another map that has two keys, plus and minus.

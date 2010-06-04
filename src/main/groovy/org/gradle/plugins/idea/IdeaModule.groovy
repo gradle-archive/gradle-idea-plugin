@@ -218,7 +218,7 @@ public class IdeaModule extends DefaultTask {
                 // might be duplicated in Idea (they live in different scopes then). 
                 if (minusDep instanceof ExternalDependency) {
                     ExternalDependency removeCandidate = firstLevelDependencies.find { it == minusDep }
-                    if (removeCandidate.artifacts == minusDep.artifacts) {
+                    if (removeCandidate && removeCandidate.artifacts == minusDep.artifacts) {
                         firstLevelDependencies.remove(removeCandidate)
                     }
                 } else {

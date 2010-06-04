@@ -71,7 +71,7 @@ public class IdeaProject extends DefaultTask {
         Set modules = subprojects.collect { subproject ->
             if (subproject.plugins.hasPlugin(IdeaPlugin)) {
                 File imlFile = subproject.ideaModule.outputFile
-                new ModulePath(project.projectDir, '$PROJECT_DIR$', imlFile)
+                new ModulePath(outputFile.parentFile, '$PROJECT_DIR$', imlFile)
             }
         }
         Project ideaProject = new Project(modules, javaVersion, wildcards, xmlreader, beforeConfiguredActions, whenConfiguredActions, withXmlActions)

@@ -24,16 +24,24 @@ package org.gradle.plugins.idea.model
 class Jdk {
     boolean assertKeyword
     boolean jdk15 = false
+    String languageLevel
     String projectJdkName
 
     def Jdk(String javaVersion) {
         if (javaVersion.startsWith("1.4")) {
             assertKeyword = true
             jdk15 = false
+            languageLevel = 'JDK_1_4'
         }
-        else if (javaVersion.compareTo("1.5") >= 0) {
+        else if (javaVersion.startsWith("1.5")) {
             assertKeyword = true
             jdk15 = true
+            languageLevel = 'JDK_1_5'
+        }
+        else if (javaVersion.compareTo("1.6") >= 0) {
+            assertKeyword = true
+            jdk15 = true
+            languageLevel = 'JDK_1_6'
         }
         else {
             assertKeyword = false
@@ -41,9 +49,10 @@ class Jdk {
         projectJdkName = javaVersion
     }
 
-    def Jdk(assertKeyword, jdk15, projectJdkName) {
+    def Jdk(assertKeyword, jdk15, languageLevel, projectJdkName) {
         this.assertKeyword = assertKeyword;
         this.jdk15 = jdk15;
+        this.languageLevel = languageLevel
         this.projectJdkName = projectJdkName;
     }
 
@@ -56,6 +65,7 @@ class Jdk {
 
         if (assertKeyword != jdk.assertKeyword) return false;
         if (jdk15 != jdk.jdk15) return false;
+        if (languageLevel != jdk.languageLevel) return false;
         if (projectJdkName != jdk.projectJdkName) return false;
 
         return true;
@@ -66,6 +76,7 @@ class Jdk {
 
         result = 31 * result + (assertKeyword ? 1 : 0);
         result = 31 * result + (jdk15 ? 1 : 0);
+        result = 31 * result + (languageLevel != null ? languageLevel.hashCode() : 0);
         result = 31 * result + (projectJdkName != null ? projectJdkName.hashCode() : 0);
         return result;
     }
@@ -75,6 +86,7 @@ class Jdk {
         return "Jdk{" +
                 "assertKeyword=" + assertKeyword +
                 ", jdk15=" + jdk15 +
+                ", languageLevel=" + languageLevel +
                 ", projectJdkName='" + projectJdkName + '\'' +
                 '}';
     }

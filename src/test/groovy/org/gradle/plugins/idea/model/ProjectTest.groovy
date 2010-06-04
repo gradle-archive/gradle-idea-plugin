@@ -31,7 +31,7 @@ class ProjectTest extends Specification {
         expect:
         project.modulePaths == [new ModulePath('file://$PROJECT_DIR$/gradle-idea-plugin.iml', '$PROJECT_DIR$/gradle-idea-plugin.iml')] as Set
         project.wildcards == ["?*.gradle", "?*.grails"] as Set
-        project.jdk == new Jdk(true, false, "1.4")
+        project.jdk == new Jdk(true, false, "JDK_1_4", "1.4")
     }
 
     def initWithReaderAndJdkAndWildcards_shouldBeMerged() {

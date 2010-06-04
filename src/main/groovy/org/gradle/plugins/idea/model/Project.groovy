@@ -72,7 +72,8 @@ class Project {
         if (javaVersion) {
             jdk = new Jdk(javaVersion)
         } else {
-            jdk = new Jdk(Boolean.parseBoolean(jdkValues.'assert-keyword'), Boolean.parseBoolean(jdkValues.'jdk-15'), jdkValues.'project-jdk-name')
+            jdk = new Jdk(Boolean.parseBoolean(jdkValues.'assert-keyword'), Boolean.parseBoolean(jdkValues.'jdk-15'),
+                          jdkValues.languageLevel, jdkValues.'project-jdk-name')
         }
     }
 
@@ -93,6 +94,7 @@ class Project {
         }
         findProjectRootManager().@'assert-keyword' = jdk.assertKeyword
         findProjectRootManager().@'assert-jdk-15' = jdk.jdk15
+        findProjectRootManager().@languageLevel = jdk.languageLevel
         findProjectRootManager().@'project-jdk-name' = jdk.projectJdkName
 
         withXmlActions.source.execute(xml)

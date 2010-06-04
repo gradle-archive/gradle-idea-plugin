@@ -102,6 +102,9 @@ public class IdeaModule extends DefaultTask {
     @Input @Optional
     String gradleCacheVariable
 
+    /**
+     * This variable is used in conjunction with the {@link #gradleCacheVariable}.
+     */
     @InputFiles @Optional
     File gradleCacheHome
 

@@ -1,6 +1,6 @@
-// For deploying the plugin you need to set the properties gradleIntellijPlugin_artifactoryId and gradleIntellijPlugin_artifactoryPassword 
-
-import java.text.SimpleDateFormat
+// For deploying the plugin you need to set the following properties:
+final String ARTIFACTORY_ID = 'gradleIntellijPlugin_artifactoryId'
+final String ARTIFACTORY_PW = 'gradleIntellijPlugin_artifactoryPassword'
 
 buildscript {
     repositories {
@@ -16,7 +16,7 @@ apply plugin: 'maven'
 apply plugin: 'org.gradle.idea'
  
 group = 'org.gradle.plugins'
-version = '0.3.1' // + new SimpleDateFormat('yyyyMMddHHmmssZ').format(new Date())
+version = '0.3.1' // + new java.text.SimpleDateFormat('yyyyMMddHHmmssZ').format(new Date())
 
 configurations {
     deployerJars
@@ -39,10 +39,16 @@ task libs(type: Copy) {
 }
 
 uploadArchives {
+    doFirst {
+       // TODO: is there a better thing to do than throw "Exception" here?
+       if (!hasProperty(ARTIFACTORY_ID) || !hasProperty(ARTIFACTORY_PW))
+         throw new Exception("You must specify both $ARTIFACTORY_ID and $ARTIFACTORY_PW to upload archives")
+    }
+
     repositories.mavenDeployer {
         configuration = configurations.deployerJars
         repository(url: "dav:http://gradle.artifactoryonline.com/gradle/plugins-releases-local") {
-            authentication(userName: gradleIntellijPlugin_artifactoryId, password: gradleIntellijPlugin_artifactoryPassword)
+            authentication(userName: properties[ARTIFACTORY_ID], properties[ARTIFACTORY_PW])
         }
     }
 }

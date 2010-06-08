@@ -126,9 +126,13 @@ public class IdeaModule extends DefaultTask {
     @TaskAction
     void updateXML() {
         Reader xmlreader = outputFile.exists() ? new FileReader(outputFile) : null;
-        Module module = new Module(getSourcePaths(), getTestSourcePaths(), getExcludePaths(), getOutputPath(), getTestOutputPath(),
+        Module module = new Module(getContentPath(), getSourcePaths(), getTestSourcePaths(), getExcludePaths(), getOutputPath(), getTestOutputPath(),
                 getDependencies(), getVariableReplacement(), javaVersion, xmlreader, beforeConfiguredActions, whenConfiguredActions, withXmlActions)
         module.toXml(new FileWriter(outputFile))
+    }
+
+    protected Path getContentPath() {
+       getPath(project.projectDir)
     }
 
     protected Path getOutputPath() {

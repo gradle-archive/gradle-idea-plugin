@@ -25,6 +25,13 @@ import org.gradle.listener.ListenerBroadcast
  */
 class Module {
     static final String INHERITED = "inherited"
+
+   /**
+    * The dir for the content root of the module.  Defaults to the projectDir for the project.  If null,
+    * the directory that contains the output file will be used. 
+    */
+    Path contentPath;
+
     /**
      * The foldes for the production code. Must not be null.
      */
@@ -61,7 +68,7 @@ class Module {
 
     private ListenerBroadcast<Action> withXmlActions
 
-    def Module(Set sourceFolders, Set testSourceFolders, Set excludeFolders, Path outputDir, Path testOutputDir, Set dependencies,
+    def Module(Path contentPath, Set sourceFolders, Set testSourceFolders, Set excludeFolders, Path outputDir, Path testOutputDir, Set dependencies,
                VariableReplacement dependencyVariableReplacement, String javaVersion, Reader inputXml,
                ListenerBroadcast<Action> beforeConfiguredActions, ListenerBroadcast<Action> whenConfiguredActions,
                ListenerBroadcast<Action> withXmlActions) {
@@ -69,6 +76,7 @@ class Module {
 
         beforeConfiguredActions.source.execute(this)
 
+        this.contentPath = contentPath
         this.sourceFolders.addAll(sourceFolders);
         this.testSourceFolders.addAll(testSourceFolders);
         this.excludeFolders.addAll(excludeFolders);
@@ -149,6 +157,7 @@ class Module {
      */
     def toXml(Writer writer) {
         addJdkToXml()
+        setContentURL()
         removeSourceAndExcludeFolderFromXml()
         addSourceAndExcludeFolderToXml()
         addOutputDirsToXml()
@@ -179,6 +188,11 @@ class Module {
             }
             findNewModuleRootManager().appendNode("orderEntry", [type: "inheritedJdk"])
         }
+    }
+
+    private def setContentURL() {
+        if (contentPath != null)
+            findContent().@url = contentPath.url
     }
 
     private def addOutputDirsToXml() {

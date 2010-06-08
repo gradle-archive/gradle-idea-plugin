@@ -204,10 +204,10 @@ class ModuleTest extends Specification {
 
     private Module createModule(Map customArgs) {
         ListenerBroadcast dummyBroadcast = new ListenerBroadcast(Action)
-        Map args = [sourceFolders: [] as Set, testSourceFolders: [] as Set, excludeFolders: [] as Set, outputDir: null, testOutputDir: null,
+        Map args = [contentPath: null, sourceFolders: [] as Set, testSourceFolders: [] as Set, excludeFolders: [] as Set, outputDir: null, testOutputDir: null,
                 moduleLibraries: [] as Set, dependencyVariableReplacement: VariableReplacement.NO_REPLACEMENT, javaVersion: null, 
                 reader: null, beforeConfiguredActions: dummyBroadcast, whenConfiguredActions: dummyBroadcast, withXmlActions: dummyBroadcast] + customArgs
-        return new Module(args.sourceFolders, args.testSourceFolders, args.excludeFolders, args.outputDir, args.testOutputDir,
+        return new Module(args.contentPath, args.sourceFolders, args.testSourceFolders, args.excludeFolders, args.outputDir, args.testOutputDir,
                 args.moduleLibraries, args.dependencyVariableReplacement, args.javaVersion, args.reader,
                 args.beforeConfiguredActions, args.whenConfiguredActions, args.withXmlActions)
     }

@@ -30,9 +30,9 @@ class Project {
     Set modulePaths = []
 
     /**
-     * A set of wildcard string to be included/excluded from the resources.
+     * Represents the compiler settings for the project.
      */
-    Set wildcards = []
+    CompilerConfiguration compilerConfiguration
 
     /**
      * Represent the jdk information of the project java sdk.
@@ -50,7 +50,7 @@ class Project {
         beforeConfiguredActions.source.execute(this)
 
         this.modulePaths.addAll(modulePaths)
-        this.wildcards.addAll(wildcards)
+        compilerConfiguration.configure(wildcards)
         this.withXmlActions = withXmlActions
 
         whenConfiguredActions.source.execute(this)
@@ -64,11 +64,10 @@ class Project {
             this.modulePaths.add(new ModulePath(module.@fileurl, module.@filepath))
         }
 
-        findWildcardResourcePatterns().entry.each { entry ->
-            this.wildcards.add(entry.@name)
-        }
-        def jdkValues = findProjectRootManager().attributes()
+        compilerConfiguration = new CompilerConfiguration()
+        compilerConfiguration.initFromXml(xml)
 
+        def jdkValues = findProjectRootManager().attributes()
         if (javaVersion) {
             jdk = new Jdk(javaVersion)
         } else {
@@ -85,13 +84,8 @@ class Project {
                 }
             }
         }
-        findWildcardResourcePatterns().replaceNode {
-            wildcardResourcePatterns {
-                this.wildcards.each { wildcard ->
-                    entry(name: wildcard)
-                }
-            }
-        }
+        compilerConfiguration.toXml(xml)
+
         findProjectRootManager().@'assert-keyword' = jdk.assertKeyword
         findProjectRootManager().@'assert-jdk-15' = jdk.jdk15
         findProjectRootManager().@languageLevel = jdk.languageLevel
@@ -128,7 +122,7 @@ class Project {
 
         if (jdk != project.jdk) return false;
         if (modulePaths != project.modulePaths) return false;
-        if (wildcards != project.wildcards) return false;
+        if (compilerConfiguration != project.compilerConfiguration) return false;
 
         return true;
     }
@@ -137,7 +131,7 @@ class Project {
         int result;
 
         result = (modulePaths != null ? modulePaths.hashCode() : 0);
-        result = 31 * result + (wildcards != null ? wildcards.hashCode() : 0);
+        result = 31 * result + (compilerConfiguration != null ? compilerConfiguration.hashCode() : 0);
         result = 31 * result + (jdk != null ? jdk.hashCode() : 0);
         return result;
     }

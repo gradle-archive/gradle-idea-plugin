@@ -30,7 +30,7 @@ class ProjectTest extends Specification {
 
         expect:
         project.modulePaths == [new ModulePath('file://$PROJECT_DIR$/gradle-idea-plugin.iml', '$PROJECT_DIR$/gradle-idea-plugin.iml')] as Set
-        project.wildcards == ["?*.gradle", "?*.grails"] as Set
+        project.compilerConfiguration.wildcards == ["?*.gradle", "?*.grails"] as Set
         project.jdk == new Jdk(true, false, "JDK_1_4", "1.4")
     }
 
@@ -39,7 +39,7 @@ class ProjectTest extends Specification {
 
         expect:
         project.modulePaths == [new ModulePath('file://$PROJECT_DIR$/gradle-idea-plugin.iml', '$PROJECT_DIR$/gradle-idea-plugin.iml')] as Set
-        project.wildcards == ["?*.gradle", "?*.grails", "?*.groovy"] as Set
+        project.compilerConfiguration.wildcards == ["?*.gradle", "?*.grails", "?*.groovy"] as Set
         project.jdk == new Jdk("1.6")
     }
 
@@ -48,7 +48,7 @@ class ProjectTest extends Specification {
 
         expect:
         project.modulePaths.size() == 0
-        project.wildcards == ["!?*.groovy"] as Set
+        project.compilerConfiguration.wildcards == ["!?*.groovy"] as Set
         project.jdk == new Jdk("1.6")
     }
 

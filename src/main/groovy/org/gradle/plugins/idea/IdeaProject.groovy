@@ -79,6 +79,16 @@ public class IdeaProject extends DefaultTask {
     }
 
     /**
+     * Returns a relative URL to the given file in the standard URL format used by IDEA.  The resulting
+     * URL is relative to the project output directory, using the $PROJECT_DIR$ macro.
+     * @param file The file to which the relative path should point.
+     * @return The relative URL as a String. 
+     */
+    String projectURL(File file) {
+       return new Path(outputFile.parentFile, '$PROJECT_DIR$', file).url
+    }
+
+    /**
      * Adds a closure to be called when the ipr xml has been created. The xml is passed to the closure as a
      * parameter in form of a {@link groovy.util.Node}. The xml might be modified.
      *

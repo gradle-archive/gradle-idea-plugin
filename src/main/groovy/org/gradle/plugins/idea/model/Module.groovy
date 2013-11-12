@@ -220,10 +220,10 @@ class Module {
 
     private def addSourceAndExcludeFolderToXml() {
         sourceFolders.each { Path path ->
-            findContent().appendNode('sourceFolder', [url: path.url, isTestSource: 'false'])
+            findContent().appendNode('sourceFolder', [url: path.url, type: 'java-resource'])
         }
         testSourceFolders.each { Path path ->
-            findContent().appendNode('sourceFolder', [url: path.url, isTestSource: 'true'])
+            findContent().appendNode('sourceFolder', [url: path.url, type: 'java-test-resource'])
         }
         excludeFolders.each { Path path ->
             findContent().appendNode('excludeFolder', [url: path.url])
